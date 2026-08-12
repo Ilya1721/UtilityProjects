@@ -43,6 +43,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CodeAnalysisRuleSet>CustomRuleSet.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CodeAnalysisRuleSet>CustomRuleSet.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -50,10 +56,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>.\fastgltf\lib\$(Configuration)\fastgltf.lib;.\glad\lib\glad.lib;.\glfw\lib\glfw3.lib;.\stb_image\lib\stb_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -65,14 +74,56 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>.\fastgltf\lib\$(Configuration)\fastgltf.lib;.\glad\lib\glad.lib;.\glfw\lib\glfw3.lib;.\stb_image\lib\stb_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="FileUtils.cpp" />
+    <ClCompile Include="GLBParser.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PBRShaderProgram.cpp" />
+    <ClCompile Include="Numeric.cpp" />
+    <ClCompile Include="RenderBuffer.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="TextureFactory.cpp" />
+    <ClCompile Include="TextureUtils.cpp" />
+    <ClCompile Include="Viewport.cpp" />
+    <ClCompile Include="Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="GLBParser.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="PBRShaderProgram.h" />
+    <ClInclude Include="Numeric.h" />
+    <ClInclude Include="RenderBuffer.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="TextureFactory.h" />
+    <ClInclude Include="TextureUtils.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="Viewport.h" />
+    <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PBRShader.frag" />
+    <None Include="PBRShader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
