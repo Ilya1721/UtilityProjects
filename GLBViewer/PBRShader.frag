@@ -10,6 +10,9 @@ uniform bool hasBaseColorTexture = false;
 uniform sampler2D baseColorTexture;
 uniform vec4 baseColorFactor;
 
+uniform bool hasNormalMap = false;
+uniform sampler2D normalMap;
+
 uniform vec3 lightDir;
 uniform vec3 cameraPos;
 
@@ -23,7 +26,17 @@ vec4 getBaseColor()
   return baseColorFactor * color;
 }
 
-vec4 getDiffuse(vec4 baseColor)
+vec3 getVertexNormal()
+{
+  if (!hasNormalMap)
+  {
+    return vertexNormal;
+  }
+  vec3 tangentNormal = texture(normalMap, vertexUV).xyz * 2.0 - 1.0;
+  return normalize(TBN * tangentNormal);
+}
+
+vec4 getDiffuse(vec4 baseColor, vec3 vertexNormal)
 {
   float diffuseStrength = dot(-lightDir, vertexNormal);
   return diffuseStrength * baseColor;
@@ -32,6 +45,7 @@ vec4 getDiffuse(vec4 baseColor)
 void main()
 {
   vec4 baseColor = getBaseColor();
-  vec4 diffuse = getDiffuse(baseColor);
-  fragColor = getDiffuse(baseColor);
+  vec3 vertexNormal = getVertexNormal();
+  vec4 diffuse = getDiffuse(baseColor, vertexNormal);
+  fragColor = baseColor;
 }

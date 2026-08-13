@@ -79,8 +79,11 @@ namespace GLBViewer
 
   void Camera::zoom(float speed)
   {
-    mEye += glm::normalize(mTarget - mEye) * speed;
-    mView = glm::lookAt(mEye, mTarget, mUp);
+    if (glm::length(mTarget - mEye) > speed)
+    {
+      mEye += glm::normalize(mTarget - mEye) * speed;
+      mView = glm::lookAt(mEye, mTarget, mUp);
+    }
   }
 
   const glm::vec3& Camera::getEye() const

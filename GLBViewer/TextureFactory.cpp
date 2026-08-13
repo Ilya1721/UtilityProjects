@@ -25,7 +25,7 @@ namespace
       case 4:
         return GL_RGBA;
       default:
-        return GL_RGB;
+        throw std::exception("Unsupported color format");
     }
   }
 

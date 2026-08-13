@@ -29,6 +29,8 @@ namespace GLBViewer
     mBaseColor.factor = getUniformLocation("baseColorFactor");
     mBaseColor.unit = getUniformLocation("baseColorTexture");
     mBaseColor.isAvailable = getUniformLocation("hasBaseColorTexture");
+    mNormalMap.unit = getUniformLocation("normalMap");
+    mNormalMap.isAvailable = getUniformLocation("hasNormalMap");
   }
 
   void PBRShaderProgram::setModel(const glm::mat4& model) const
@@ -50,13 +52,23 @@ namespace GLBViewer
   }
 
   void PBRShaderProgram::setTexture(
-    TextureData& textureData, Texture2D* texture, const glm::vec4& factor, int textureUnit
+    TextureData& textureData, Texture2D* texture, int textureUnit
   ) const
   {
-    glUniform4fv(textureData.factor, 1, glm::value_ptr(factor));
     glUniform1i(textureData.isAvailable, texture != nullptr);
     glUniform1i(textureData.unit, textureUnit);
     glBindTextureUnit(textureUnit, texture ? texture->getId() : 0);
+  }
+
+  void PBRShaderProgram::setTexture(
+    ColorTextureData& textureData,
+    Texture2D* texture,
+    const glm::vec4& factor,
+    int textureUnit
+  ) const
+  {
+    setTexture(textureData, texture, textureUnit);
+    glUniform4fv(textureData.factor, 1, glm::value_ptr(factor));
   }
 
   void PBRShaderProgram::setMaterial(const PBRMaterial& material) const
@@ -66,6 +78,7 @@ namespace GLBViewer
       mBaseColor, material.baseColorTexture.get(), material.baseColorFactor,
       BASE_COLOR_TEXTURE_UNIT
     );
+    setTexture(mNormalMap, material.normalMap.get(), NORMAL_MAP_TEXTURE_UNIT);
   }
 
   void PBRShaderProgram::setLightDir(const glm::vec3& lightDir) const

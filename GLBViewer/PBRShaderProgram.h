@@ -9,9 +9,13 @@ namespace GLBViewer
 {
   struct TextureData
   {
-    int unit;
-    int isAvailable;
-    int factor;
+    int unit {};
+    int isAvailable {};
+  };
+
+  struct ColorTextureData : TextureData
+  {
+    int factor {};
   };
 
   class PBRShaderProgram : public ShaderProgram
@@ -28,8 +32,9 @@ namespace GLBViewer
     void setCameraPos(const glm::vec3& cameraPos) const;
 
    private:
+    void setTexture(TextureData& textureData, Texture2D* texture, int textureUnit) const;
     void setTexture(
-      TextureData& textureData,
+      ColorTextureData& textureData,
       Texture2D* texture,
       const glm::vec4& factor,
       int textureUnit
@@ -41,6 +46,7 @@ namespace GLBViewer
     int mProjection;
     int mLightDir;
     int mCameraPos;
-    mutable TextureData mBaseColor;
+    mutable ColorTextureData mBaseColor;
+    mutable TextureData mNormalMap;
   };
 }

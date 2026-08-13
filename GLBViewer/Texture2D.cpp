@@ -19,7 +19,7 @@ namespace GLBViewer
 
   void Texture2D::bind() const
   {
-    glActiveTexture(mTexture);
+    glBindTexture(GL_TEXTURE_2D, mTexture);
   }
 
   int Texture2D::getId() const
