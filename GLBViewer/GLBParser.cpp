@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-#include "TextureFactory.h"
+#include "TextureUtils.h"
 
 namespace GLBViewer
 {
@@ -106,7 +106,8 @@ namespace GLBViewer
           auto convertedData = reinterpret_cast<const unsigned char*>(
             data.bytes.data() + bufferView.byteOffset
           );
-          texture = createImageTexture(convertedData, data.bytes.size());
+          auto image = loadImage(convertedData, data.bytes.size());
+          texture = createImageTexture(*image);
         }
       },
       buffer.data
@@ -114,11 +115,23 @@ namespace GLBViewer
     return texture;
   }
 
+  std::shared_ptr<Texture2D> GLBParser::loadTextureFromFile(const char* filePath) const
+  {
+    auto image = loadImage(filePath);
+    return createImageTexture(*image);
+  }
+
   std::shared_ptr<Texture2D> GLBParser::getTexture(
     const fastgltf::TextureInfo& textureInfo
   ) const
   {
-    const auto& textureGltf = mAsset->textures[textureInfo.textureIndex];
+    auto textureIndex = textureInfo.textureIndex;
+    auto textureMapIt = mTextureMap.find(textureIndex);
+    if (textureMapIt != mTextureMap.end())
+    {
+      return textureMapIt->second;
+    }
+    const auto& textureGltf = mAsset->textures[textureIndex];
     const auto& imageGltf = mAsset->images[textureGltf.imageIndex.value()];
     std::shared_ptr<Texture2D> texture;
     std::visit(
@@ -131,11 +144,12 @@ namespace GLBViewer
         }
         else if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::URI>)
         {
-          texture = createImageTexture(data.uri.c_str());
+          texture = loadTextureFromFile(data.uri.c_str());
         }
       },
       imageGltf.data
     );
+    mTextureMap.insert({textureIndex, texture});
     return texture;
   }
 

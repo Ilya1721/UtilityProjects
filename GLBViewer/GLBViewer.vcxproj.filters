@@ -44,9 +44,6 @@
     <ClCompile Include="Texture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TextureUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,9 +95,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Texture2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureUtils.h">

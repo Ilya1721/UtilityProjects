@@ -21,9 +21,11 @@ namespace GLBViewer
     std::shared_ptr<Texture2D> loadTextureFromMemory(
       const fastgltf::sources::BufferView& bufferViewSource
     ) const;
+    std::shared_ptr<Texture2D> loadTextureFromFile(const char* filePath) const;
     std::vector<Vertex> parseVertices(const fastgltf::Node& node) const;
 
    private:
     fastgltf::Asset* mAsset = nullptr;
+    mutable std::unordered_map<size_t, std::shared_ptr<Texture2D>> mTextureMap;
   };
 }

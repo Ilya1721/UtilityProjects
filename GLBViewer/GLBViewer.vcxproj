@@ -96,7 +96,6 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Texture2D.cpp" />
-    <ClCompile Include="TextureFactory.cpp" />
     <ClCompile Include="TextureUtils.cpp" />
     <ClCompile Include="Viewport.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -115,7 +114,6 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Texture2D.h" />
-    <ClInclude Include="TextureFactory.h" />
     <ClInclude Include="TextureUtils.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Viewport.h" />
