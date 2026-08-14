@@ -25,12 +25,16 @@ namespace GLBViewer
     mView = getUniformLocation("view");
     mProjection = getUniformLocation("projection");
     mLightDir = getUniformLocation("lightDir");
-    mCameraPos = getUniformLocation("cameraPos");
+    mCameraPosition = getUniformLocation("cameraPosition");
     mBaseColor.factor = getUniformLocation("baseColorFactor");
     mBaseColor.unit = getUniformLocation("baseColorTexture");
     mBaseColor.isAvailable = getUniformLocation("hasBaseColorTexture");
     mNormalMap.unit = getUniformLocation("normalMap");
     mNormalMap.isAvailable = getUniformLocation("hasNormalMap");
+    mMetallicRoughness.metallicFactor = getUniformLocation("metallicFactor");
+    mMetallicRoughness.roughnessFactor = getUniformLocation("roughnessFactor");
+    mMetallicRoughness.isAvailable = getUniformLocation("hasMetallicRoughness");
+    mMetallicRoughness.unit = getUniformLocation("metallicRoughness");
   }
 
   void PBRShaderProgram::setModel(const glm::mat4& model) const
@@ -71,6 +75,19 @@ namespace GLBViewer
     glUniform4fv(textureData.factor, 1, glm::value_ptr(factor));
   }
 
+  void PBRShaderProgram::setTexture(
+    MetallicRougnessTextureData& textureData,
+    Texture2D* texture,
+    float metallicFactor,
+    float roughnessFactor,
+    int textureUnit
+  ) const
+  {
+    setTexture(textureData, texture, textureUnit);
+    glUniform1f(textureData.metallicFactor, metallicFactor);
+    glUniform1f(textureData.roughnessFactor, roughnessFactor);
+  }
+
   void PBRShaderProgram::setMaterial(const PBRMaterial& material) const
   {
     bind();
@@ -79,6 +96,10 @@ namespace GLBViewer
       BASE_COLOR_TEXTURE_UNIT
     );
     setTexture(mNormalMap, material.normalMap.get(), NORMAL_MAP_TEXTURE_UNIT);
+    setTexture(
+      mMetallicRoughness, material.metallicRougnessTexture.get(), material.metallicFactor,
+      material.rougnessFactor, METALLIC_ROUGHNESS_TEXTURE_UNIT
+    );
   }
 
   void PBRShaderProgram::setLightDir(const glm::vec3& lightDir) const
@@ -86,8 +107,8 @@ namespace GLBViewer
     glUniform3fv(mLightDir, 1, glm::value_ptr(lightDir));
   }
 
-  void PBRShaderProgram::setCameraPos(const glm::vec3& cameraPos) const
+  void PBRShaderProgram::setCameraPosition(const glm::vec3& cameraPosition) const
   {
-    glUniform3fv(mCameraPos, 1, glm::value_ptr(cameraPos));
+    glUniform3fv(mCameraPosition, 1, glm::value_ptr(cameraPosition));
   }
 }

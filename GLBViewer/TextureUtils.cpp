@@ -10,21 +10,13 @@
 
 namespace
 {
-  int getColorFormat(int colorChannels)
+  int getInternalFormat(int colorChannels, bool useGammaCorrection)
   {
-    switch (colorChannels)
+    if (useGammaCorrection)
     {
-      case 1:
-        return GL_RED;
-      case 2:
-        return GL_RG;
-      case 3:
-        return GL_RGB;
-      case 4:
-        return GL_RGBA;
-      default:
-        throw std::exception("Unsupported color format");
+      return colorChannels == 3 ? GL_SRGB8 : GL_SRGB8_ALPHA8;
     }
+    return colorChannels == 3 ? GL_RGB8 : GL_RGBA8;
   }
 }
 
@@ -35,13 +27,16 @@ namespace GLBViewer
     stbi_image_free(data);
   }
 
-  std::shared_ptr<Texture2D> createImageTexture(const Image& image)
+  std::shared_ptr<Texture2D> createImageTexture(
+    const Image& image, bool useGammaCorrection
+  )
   {
     auto texture = std::make_shared<Texture2D>(image.width, image.height);
     texture->bind();
-    const auto colorFormat = getColorFormat(image.colorChannels);
+    auto format = image.colorChannels == 3 ? GL_RGB : GL_RGBA;
+    auto internalFormat = getInternalFormat(image.colorChannels, useGammaCorrection);
     glTexImage2D(
-      GL_TEXTURE_2D, 0, colorFormat, image.width, image.height, 0, colorFormat,
+      GL_TEXTURE_2D, 0, internalFormat, image.width, image.height, 0, format,
       GL_UNSIGNED_BYTE, image.data
     );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

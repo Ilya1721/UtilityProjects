@@ -16,7 +16,9 @@ namespace GLBViewer
     unsigned char* data = nullptr;
   };
 
-  std::shared_ptr<Texture2D> createImageTexture(const Image& image);
+  std::shared_ptr<Texture2D> createImageTexture(
+    const Image& image, bool useGammaCorrection
+  );
   std::unique_ptr<Image> loadImage(const std::string& filePath);
   std::unique_ptr<Image> loadImage(const unsigned char* bytes, int bytesLength);
 }

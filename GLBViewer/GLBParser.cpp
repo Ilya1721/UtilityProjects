@@ -91,14 +91,14 @@ namespace GLBViewer
   }
 
   std::shared_ptr<Texture2D> GLBParser::loadTextureFromMemory(
-    const fastgltf::sources::BufferView& bufferViewSource
+    const fastgltf::sources::BufferView& bufferViewSource, bool useGammaCorrection
   ) const
   {
     const auto& bufferView = mAsset->bufferViews[bufferViewSource.bufferViewIndex];
     const auto& buffer = mAsset->buffers[bufferView.bufferIndex];
     std::shared_ptr<Texture2D> texture;
     std::visit(
-      [&texture, &bufferView](auto&& data)
+      [&texture, &bufferView, useGammaCorrection](auto&& data)
       {
         using BufferDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<BufferDataType, fastgltf::sources::Array>)
@@ -107,7 +107,7 @@ namespace GLBViewer
             data.bytes.data() + bufferView.byteOffset
           );
           auto image = loadImage(convertedData, data.bytes.size());
-          texture = createImageTexture(*image);
+          texture = createImageTexture(*image, useGammaCorrection);
         }
       },
       buffer.data
@@ -115,14 +115,16 @@ namespace GLBViewer
     return texture;
   }
 
-  std::shared_ptr<Texture2D> GLBParser::loadTextureFromFile(const char* filePath) const
+  std::shared_ptr<Texture2D> GLBParser::loadTextureFromFile(
+    const char* filePath, bool useGammaCorrection
+  ) const
   {
     auto image = loadImage(filePath);
-    return createImageTexture(*image);
+    return createImageTexture(*image, useGammaCorrection);
   }
 
   std::shared_ptr<Texture2D> GLBParser::getTexture(
-    const fastgltf::TextureInfo& textureInfo
+    const fastgltf::TextureInfo& textureInfo, bool useGammaCorrection
   ) const
   {
     auto textureIndex = textureInfo.textureIndex;
@@ -135,16 +137,16 @@ namespace GLBViewer
     const auto& imageGltf = mAsset->images[textureGltf.imageIndex.value()];
     std::shared_ptr<Texture2D> texture;
     std::visit(
-      [this, &imageGltf, &texture](auto&& data)
+      [this, &imageGltf, &texture, useGammaCorrection](auto&& data)
       {
         using ImageDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::BufferView>)
         {
-          texture = loadTextureFromMemory(data);
+          texture = loadTextureFromMemory(data, useGammaCorrection);
         }
         else if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::URI>)
         {
-          texture = loadTextureFromFile(data.uri.c_str());
+          texture = loadTextureFromFile(data.uri.c_str(), useGammaCorrection);
         }
       },
       imageGltf.data
@@ -171,16 +173,16 @@ namespace GLBViewer
     if (materialGltf.pbrData.baseColorTexture.has_value())
     {
       const auto& textureInfo = materialGltf.pbrData.baseColorTexture.value();
-      material.baseColorTexture = getTexture(textureInfo);
+      material.baseColorTexture = getTexture(textureInfo, true);
     }
     if (materialGltf.normalTexture.has_value())
     {
-      material.normalMap = getTexture(materialGltf.normalTexture.value());
+      material.normalMap = getTexture(materialGltf.normalTexture.value(), false);
     }
     if (materialGltf.pbrData.metallicRoughnessTexture.has_value())
     {
       material.metallicRougnessTexture =
-        getTexture(materialGltf.pbrData.metallicRoughnessTexture.value());
+        getTexture(materialGltf.pbrData.metallicRoughnessTexture.value(), false);
     }
     return material;
   }

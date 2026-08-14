@@ -18,6 +18,12 @@ namespace GLBViewer
     int factor {};
   };
 
+  struct MetallicRougnessTextureData : TextureData
+  {
+    int metallicFactor {};
+    int roughnessFactor {};
+  };
+
   class PBRShaderProgram : public ShaderProgram
   {
    public:
@@ -29,7 +35,7 @@ namespace GLBViewer
     void setProjection(const glm::mat4& projection) const;
     void setMaterial(const PBRMaterial& material) const;
     void setLightDir(const glm::vec3& lightDir) const;
-    void setCameraPos(const glm::vec3& cameraPos) const;
+    void setCameraPosition(const glm::vec3& cameraPosition) const;
 
    private:
     void setTexture(TextureData& textureData, Texture2D* texture, int textureUnit) const;
@@ -39,14 +45,22 @@ namespace GLBViewer
       const glm::vec4& factor,
       int textureUnit
     ) const;
+    void setTexture(
+      MetallicRougnessTextureData& textureData,
+      Texture2D* texture,
+      float metallicFactor,
+      float roughnessFactor,
+      int textureUnit
+    ) const;
 
    private:
     int mModel;
     int mView;
     int mProjection;
     int mLightDir;
-    int mCameraPos;
-    mutable ColorTextureData mBaseColor;
+    int mCameraPosition;
     mutable TextureData mNormalMap;
+    mutable ColorTextureData mBaseColor;
+    mutable MetallicRougnessTextureData mMetallicRoughness;
   };
 }

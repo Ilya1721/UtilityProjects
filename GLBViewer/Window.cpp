@@ -146,7 +146,7 @@ namespace GLBViewer
     auto aspectRatio = mViewport->getAspectRatio();
     mCamera->adjust(sceneAABB, aspectRatio);
     mShader->setView(mCamera->getView());
-    mShader->setCameraPos(mCamera->getEye());
+    mShader->setCameraPosition(mCamera->getEye());
   }
 
   void Window::render() const
@@ -173,7 +173,7 @@ namespace GLBViewer
   {
     auto viewportSize = mViewport->getSize();
     auto flippedY = viewportSize.y - screenPos.y;
-    glm::vec3 ndc{};
+    glm::vec3 ndc {};
     ndc.x = (2.0f * screenPos.x) / viewportSize.x - 1.0f;
     ndc.y = (2.0f * flippedY) / viewportSize.y - 1.0f;
     return ndc;

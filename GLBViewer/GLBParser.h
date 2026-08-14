@@ -17,11 +17,15 @@ namespace GLBViewer
     std::unique_ptr<Mesh> parseNode(const fastgltf::Node& node) const;
     std::unique_ptr<Mesh> parseMesh(const fastgltf::Node& node) const;
     PBRMaterial parseMaterial(const fastgltf::Node& node) const;
-    std::shared_ptr<Texture2D> getTexture(const fastgltf::TextureInfo& textureInfo) const;
-    std::shared_ptr<Texture2D> loadTextureFromMemory(
-      const fastgltf::sources::BufferView& bufferViewSource
+    std::shared_ptr<Texture2D> getTexture(
+      const fastgltf::TextureInfo& textureInfo, bool useGammaCorrection
     ) const;
-    std::shared_ptr<Texture2D> loadTextureFromFile(const char* filePath) const;
+    std::shared_ptr<Texture2D> loadTextureFromMemory(
+      const fastgltf::sources::BufferView& bufferViewSource, bool useGammaCorrection
+    ) const;
+    std::shared_ptr<Texture2D> loadTextureFromFile(
+      const char* filePath, bool useGammaCorrection
+    ) const;
     std::vector<Vertex> parseVertices(const fastgltf::Node& node) const;
 
    private:

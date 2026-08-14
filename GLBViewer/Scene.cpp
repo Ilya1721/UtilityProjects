@@ -13,6 +13,7 @@ namespace GLBViewer
   Scene::Scene()
   {
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(0.741f, 0.871f, 0.871f, 1.0f);
   }
 
