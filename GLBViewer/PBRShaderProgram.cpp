@@ -12,6 +12,7 @@ namespace
   constexpr int BASE_COLOR_TEXTURE_UNIT = 0;
   constexpr int NORMAL_MAP_TEXTURE_UNIT = 1;
   constexpr int METALLIC_ROUGHNESS_TEXTURE_UNIT = 2;
+  constexpr int ENV_MAP_UNIT = 3;
 }
 
 namespace GLBViewer
@@ -35,6 +36,7 @@ namespace GLBViewer
     mMetallicRoughness.roughnessFactor = getUniformLocation("roughnessFactor");
     mMetallicRoughness.isAvailable = getUniformLocation("hasMetallicRoughness");
     mMetallicRoughness.unit = getUniformLocation("metallicRoughness");
+    mEnvMap = getUniformLocation("envMap");
   }
 
   void PBRShaderProgram::setModel(const glm::mat4& model) const
@@ -110,5 +112,12 @@ namespace GLBViewer
   void PBRShaderProgram::setCameraPosition(const glm::vec3& cameraPosition) const
   {
     glUniform3fv(mCameraPosition, 1, glm::value_ptr(cameraPosition));
+  }
+
+  void PBRShaderProgram::setEnvCubemap(const CubemapTexture& texture) const
+  {
+    bind();
+    glUniform1i(mEnvMap, ENV_MAP_UNIT);
+    glBindTextureUnit(ENV_MAP_UNIT, texture.getId());
   }
 }

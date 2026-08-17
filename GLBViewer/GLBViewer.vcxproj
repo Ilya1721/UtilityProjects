@@ -86,7 +86,10 @@
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CubemapTexture.cpp" />
+    <ClCompile Include="EnvMapShaderProgram.cpp" />
     <ClCompile Include="FileUtils.cpp" />
+    <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="GLBParser.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -95,6 +98,7 @@
     <ClCompile Include="RenderBuffer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="TextureUtils.cpp" />
     <ClCompile Include="Viewport.cpp" />
@@ -104,7 +108,10 @@
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="CubemapTexture.h" />
+    <ClInclude Include="EnvMapShaderProgram.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="GLBParser.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
@@ -113,6 +120,8 @@
     <ClInclude Include="RenderBuffer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="StaticModels.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TextureUtils.h" />
     <ClInclude Include="Vertex.h" />
@@ -120,6 +129,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="EnvMapShader.frag" />
+    <None Include="EnvMapShader.vert" />
     <None Include="PBRShader.frag" />
     <None Include="PBRShader.vert" />
   </ItemGroup>

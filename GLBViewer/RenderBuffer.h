@@ -20,7 +20,13 @@ namespace GLBViewer
     unsigned int mVAO {};
   };
 
-  class RenderBuffer
+  class CubeRenderBuffer : public VertexBuffer
+  {
+   public:
+    void sendDataToGPU();
+  };
+
+  class SceneRenderBuffer : public VertexBuffer
   {
    public:
     void clear();
@@ -37,6 +43,5 @@ namespace GLBViewer
     std::vector<std::vector<const float*>> mDataPointers;
     std::vector<int> mAlignment;
     std::vector<float> mRawData;
-    VertexBuffer mVertexBuffer;
   };
 }

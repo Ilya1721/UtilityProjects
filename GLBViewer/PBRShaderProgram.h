@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "CubemapTexture.h"
 #include "Material.h"
 #include "ShaderProgram.h"
 
@@ -36,6 +37,7 @@ namespace GLBViewer
     void setMaterial(const PBRMaterial& material) const;
     void setLightDir(const glm::vec3& lightDir) const;
     void setCameraPosition(const glm::vec3& cameraPosition) const;
+    void setEnvCubemap(const CubemapTexture& texture) const;
 
    private:
     void setTexture(TextureData& textureData, Texture2D* texture, int textureUnit) const;
@@ -59,6 +61,7 @@ namespace GLBViewer
     int mProjection;
     int mLightDir;
     int mCameraPosition;
+    int mEnvMap;
     mutable TextureData mNormalMap;
     mutable ColorTextureData mBaseColor;
     mutable MetallicRougnessTextureData mMetallicRoughness;

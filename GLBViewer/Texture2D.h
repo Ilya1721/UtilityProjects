@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Texture.h"
+
 namespace GLBViewer
 {
-  class Texture2D
+  class Texture2D : public Texture
   {
    public:
-    Texture2D(int width, int height) noexcept;
-    ~Texture2D();
-    int getId() const;
+    Texture2D(int width, int height);
     int getWidth() const;
     int getHeight() const;
     void bind() const;
@@ -15,6 +15,5 @@ namespace GLBViewer
    private:
     int mWidth {};
     int mHeight {};
-    unsigned int mTexture {};
   };
 }

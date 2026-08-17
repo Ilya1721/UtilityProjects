@@ -1,24 +1,34 @@
 #pragma once
 
+#include <stb_image/stb_image.h>
+
 #include <memory>
 #include <string>
 
+#include "CubemapTexture.h"
 #include "Texture2D.h"
 
 namespace GLBViewer
 {
-  struct Image
+  template <typename T> struct Image
   {
-    ~Image();
+    ~Image()
+    {
+      stbi_image_free(data);
+    }
     int width {};
     int height {};
     int colorChannels {};
-    unsigned char* data = nullptr;
+    T* data = nullptr;
   };
 
+  using RegularImage = Image<unsigned char>;
+  using HDRI = Image<float>;
+
   std::shared_ptr<Texture2D> createImageTexture(
-    const Image& image, bool useGammaCorrection
+    const RegularImage& image, bool useGammaCorrection
   );
-  std::unique_ptr<Image> loadImage(const std::string& filePath);
-  std::unique_ptr<Image> loadImage(const unsigned char* bytes, int bytesLength);
+  std::unique_ptr<CubemapTexture> loadEnvCubemap(const std::string& filePath);
+  std::unique_ptr<RegularImage> loadImage(const std::string& filePath);
+  std::unique_ptr<RegularImage> loadImage(const unsigned char* bytes, int bytesLength);
 }

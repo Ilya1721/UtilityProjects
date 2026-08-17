@@ -26,7 +26,7 @@ namespace GLBViewer
    private:
     std::unordered_map<const Mesh*, int> mMeshOffsetMap;
     std::vector<std::unique_ptr<Mesh>> mRootMeshes;
-    RenderBuffer mRenderBuffer;
+    SceneRenderBuffer mRenderBuffer;
     AABB mSceneAABB;
   };
 }

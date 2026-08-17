@@ -7,6 +7,8 @@
 
 #include <functional>
 
+#include "StaticModels.h"
+
 namespace
 {
   using namespace GLBViewer;
@@ -40,7 +42,15 @@ namespace GLBViewer
     glBindVertexArray(mVAO);
   }
 
-  void RenderBuffer::updateAlignment(const Vertex& vertex)
+  void CubeRenderBuffer::sendDataToGPU()
+  {
+    bind();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(CUBE_VERTICES), CUBE_VERTICES, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+  }
+
+  void SceneRenderBuffer::updateAlignment(const Vertex& vertex)
   {
     auto updateFunc = [this](const auto& vec)
     {
@@ -50,7 +60,7 @@ namespace GLBViewer
     updateInOrder(updateFunc, vertex);
   }
 
-  void RenderBuffer::updateDataPointers(const Vertex& vertex)
+  void SceneRenderBuffer::updateDataPointers(const Vertex& vertex)
   {
     mDataPointers.emplace_back();
     auto updateFunc = [this](const auto& vec)
@@ -58,7 +68,7 @@ namespace GLBViewer
     updateInOrder(updateFunc, vertex);
   }
 
-  void RenderBuffer::loadRawData(size_t vertexIdx)
+  void SceneRenderBuffer::loadRawData(size_t vertexIdx)
   {
     for (int fieldIdx = 0; fieldIdx < mAlignment.size(); ++fieldIdx)
     {
@@ -70,12 +80,12 @@ namespace GLBViewer
     }
   }
 
-  void RenderBuffer::clear()
+  void SceneRenderBuffer::clear()
   {
     mRawData.clear();
   }
 
-  void RenderBuffer::loadVertices(const std::vector<Vertex>& vertices)
+  void SceneRenderBuffer::loadVertices(const std::vector<Vertex>& vertices)
   {
     updateAlignment(vertices[0]);
     for (size_t vertexIdx = 0; vertexIdx < vertices.size(); ++vertexIdx)
@@ -85,9 +95,9 @@ namespace GLBViewer
     }
   }
 
-  void RenderBuffer::sendDataToGPU()
+  void SceneRenderBuffer::sendDataToGPU()
   {
-    mVertexBuffer.bind();
+    bind();
     glBufferData(
       GL_ARRAY_BUFFER, mRawData.size() * sizeof(float), mRawData.data(), GL_DYNAMIC_DRAW
     );

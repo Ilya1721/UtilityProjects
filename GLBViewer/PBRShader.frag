@@ -18,10 +18,13 @@ uniform sampler2D metallicRoughness;
 uniform float metallicFactor;
 uniform float roughnessFactor;
 
+uniform samplerCube envMap;
+
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
 
 const float PI = 3.14159265359;
+const float LIGHT_INTENSITY = 1.0;
 
 vec4 getBaseColor()
 {
@@ -91,6 +94,13 @@ vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
   return F0 + (1.0 - F0) * pow(1.0 - HdotV, 5.0);
 }
 
+vec3 getAmbientSpecular(vec3 N, vec3 V, vec3 F)
+{
+  vec3 R = reflect(-V, N);
+  vec3 envColor = texture(envMap, R).rgb;
+  return F * envColor;
+}
+
 vec3 getSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F)
 {
   float roughness = getRoughness();
@@ -119,8 +129,10 @@ void main()
   float NdotL = max(dot(N, L), 0.0);
   vec3 baseReflectivity = mix(vec3(0.04), albedo, metallic);
   vec3 F = fresnelSchlick(H, V, baseReflectivity);
-  vec3 specular = getSpecular(N, V, L, H, F);
+  vec3 mainSpecular = getSpecular(N, V, L, H, F);
+  vec3 ambientSpecular = getAmbientSpecular(N, V, F);
+  vec3 specular = ambientSpecular + mainSpecular;
   vec3 diffuse = getDiffuse(albedo, F, metallic);
-  vec3 reflectedRadiance = (diffuse + specular) * NdotL;
+  vec3 reflectedRadiance = (diffuse + specular) * NdotL * LIGHT_INTENSITY;
   fragColor = vec4(albedo + reflectedRadiance, baseColor.a);
 }

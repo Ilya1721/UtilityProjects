@@ -7,24 +7,13 @@
 
 namespace GLBViewer
 {
-  Texture2D::Texture2D(int width, int height) noexcept : mWidth(width), mHeight(height)
+  Texture2D::Texture2D(int width, int height) : Texture(), mWidth(width), mHeight(height)
   {
-    glGenTextures(1, &mTexture);
-  }
-
-  Texture2D::~Texture2D()
-  {
-    glDeleteTextures(1, &mTexture);
   }
 
   void Texture2D::bind() const
   {
     glBindTexture(GL_TEXTURE_2D, mTexture);
-  }
-
-  int Texture2D::getId() const
-  {
-    return mTexture;
   }
 
   int Texture2D::getWidth() const

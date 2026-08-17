@@ -39,6 +39,7 @@ namespace GLBViewer
 
   void Scene::render(PBRShaderProgram* shader) const
   {
+    mRenderBuffer.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for (const auto& [mesh, vertexOffset] : mMeshOffsetMap)
     {

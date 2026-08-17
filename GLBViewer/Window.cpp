@@ -8,6 +8,8 @@
 
 #include <exception>
 
+#include "TextureUtils.h"
+
 namespace
 {
   using namespace GLBViewer;
@@ -92,8 +94,10 @@ namespace GLBViewer
     mShader = std::make_unique<PBRShaderProgram>(
       PBR_VERTEX_SHADER_PATH, PBR_FRAGMENT_SHADER_PATH
     );
+    mEnvCubemap = loadEnvCubemap(ENV_HDRI);
     mShader->bind();
     mShader->setLightDir(glm::normalize(LIGHT_DIR));
+    mShader->setEnvCubemap(*mEnvCubemap);
     onViewportSizeChanged(width, height);
   }
 
@@ -114,6 +118,7 @@ namespace GLBViewer
       mCamera->orbit(startPosNDC, endPosNDC);
     }
     mShader->setView(mCamera->getView());
+    mShader->setCameraPosition(mCamera->getEye());
     mvState.savedCursorPos = cursorPos;
   }
 
@@ -131,6 +136,7 @@ namespace GLBViewer
   {
     mCamera->zoom(scrollY);
     mShader->setView(mCamera->getView());
+    mShader->setCameraPosition(mCamera->getEye());
   }
 
   void Window::onViewportSizeChanged(int width, int height)

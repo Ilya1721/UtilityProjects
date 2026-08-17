@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "Camera.h"
+#include "CubemapTexture.h"
 #include "PBRShaderProgram.h"
 #include "Scene.h"
 #include "Viewport.h"
@@ -54,6 +55,7 @@ namespace GLBViewer
     std::unique_ptr<Viewport> mViewport;
     std::unique_ptr<Camera> mCamera;
     std::unique_ptr<PBRShaderProgram> mShader;
+    std::unique_ptr<CubemapTexture> mEnvCubemap;
     WindowHandle mWindowHandle;
     CameraMovementState mCameraMovementState;
   };
