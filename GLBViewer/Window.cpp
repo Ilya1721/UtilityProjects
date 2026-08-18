@@ -8,7 +8,7 @@
 
 #include <exception>
 
-#include "TextureUtils.h"
+#include "IBL.h"
 
 namespace
 {
@@ -94,10 +94,10 @@ namespace GLBViewer
     mShader = std::make_unique<PBRShaderProgram>(
       PBR_VERTEX_SHADER_PATH, PBR_FRAGMENT_SHADER_PATH
     );
-    mEnvCubemap = loadEnvCubemap(ENV_HDRI);
-    mShader->bind();
+    IBL ibl(ENV_HDRI);
+    mIrradianceMap = ibl.loadIrradianceMap();
+    mShader->setIrradianceMap(*mIrradianceMap);
     mShader->setLightDir(glm::normalize(LIGHT_DIR));
-    mShader->setEnvCubemap(*mEnvCubemap);
     onViewportSizeChanged(width, height);
   }
 

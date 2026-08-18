@@ -71,6 +71,12 @@
     <ClCompile Include="EnvMapShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IBL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IrradianceMapShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -139,6 +145,15 @@
     <ClInclude Include="StaticModels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IBL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IrradianceMapShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="PBRShader.vert">
@@ -151,6 +166,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="EnvMapShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="IrradianceMapShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="IrradianceMapShader.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

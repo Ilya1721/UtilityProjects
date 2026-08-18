@@ -91,6 +91,8 @@
     <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="GLBParser.cpp" />
+    <ClCompile Include="IBL.cpp" />
+    <ClCompile Include="IrradianceMapShaderProgram.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="PBRShaderProgram.cpp" />
@@ -113,6 +115,9 @@
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="GLBParser.h" />
+    <ClInclude Include="IBL.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="IrradianceMapShaderProgram.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="PBRShaderProgram.h" />
@@ -131,6 +136,8 @@
   <ItemGroup>
     <None Include="EnvMapShader.frag" />
     <None Include="EnvMapShader.vert" />
+    <None Include="IrradianceMapShader.frag" />
+    <None Include="IrradianceMapShader.vert" />
     <None Include="PBRShader.frag" />
     <None Include="PBRShader.vert" />
   </ItemGroup>
