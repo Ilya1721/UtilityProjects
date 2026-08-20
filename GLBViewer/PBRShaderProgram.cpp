@@ -13,6 +13,8 @@ namespace
   constexpr int NORMAL_MAP_TEXTURE_UNIT = 1;
   constexpr int METALLIC_ROUGHNESS_TEXTURE_UNIT = 2;
   constexpr int IRRADIANCE_MAP_UNIT = 3;
+  constexpr int PREFILTERED_ENV_MAP_UNIT = 4;
+  constexpr int BRDF_LUT_UNIT = 5;
 }
 
 namespace GLBViewer
@@ -36,7 +38,9 @@ namespace GLBViewer
     mMetallicRoughness.roughnessFactor = getUniformLocation("roughnessFactor");
     mMetallicRoughness.isAvailable = getUniformLocation("hasMetallicRoughness");
     mMetallicRoughness.unit = getUniformLocation("metallicRoughness");
+    mPrefilteredEnvMap = getUniformLocation("prefilteredEnvMap");
     mIrradianceMap = getUniformLocation("irradianceMap");
+    mBRDFLUT = getUniformLocation("brdfLUT");
   }
 
   void PBRShaderProgram::setModel(const glm::mat4& model) const
@@ -119,5 +123,19 @@ namespace GLBViewer
     bind();
     glUniform1i(mIrradianceMap, IRRADIANCE_MAP_UNIT);
     glBindTextureUnit(IRRADIANCE_MAP_UNIT, texture.getId());
+  }
+
+  void PBRShaderProgram::setPrefilteredEnvMap(const CubemapTexture& texture) const
+  {
+    bind();
+    glUniform1i(mPrefilteredEnvMap, PREFILTERED_ENV_MAP_UNIT);
+    glBindTextureUnit(PREFILTERED_ENV_MAP_UNIT, texture.getId());
+  }
+
+  void PBRShaderProgram::setBRDFLUT(const Texture2D& texture) const
+  {
+    bind();
+    glUniform1i(mBRDFLUT, BRDF_LUT_UNIT);
+    glBindTextureUnit(BRDF_LUT_UNIT, texture.getId());
   }
 }

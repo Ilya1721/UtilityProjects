@@ -77,6 +77,9 @@
     <ClCompile Include="IrradianceMapShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PrefilteredEnvMapShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -154,6 +157,9 @@
     <ClInclude Include="IrradianceMapShaderProgram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PrefilteredEnvMapShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="PBRShader.vert">
@@ -172,6 +178,27 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="IrradianceMapShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PrefilteredEnvMapShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PrefilteredEnvMapShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="BRDFLUTShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="BRDFLUTShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PBRCommon.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="IBLCommon.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Common.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

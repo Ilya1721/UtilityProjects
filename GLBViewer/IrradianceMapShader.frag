@@ -1,11 +1,11 @@
 #version 330 core
 
+#include "Common.glsl"
+
 in vec3 modelPos;
 out vec4 fragColor;
 
 uniform samplerCube envMap;
-
-const float PI = 3.14159265359;
 
 void main()
 {
@@ -13,7 +13,6 @@ void main()
   vec3 tempUp = vec3(0.0, 1.0, 0.0);
   vec3 right = normalize(cross(tempUp, N));
   vec3 up = normalize(cross(N, right));
-
   vec3 irradiance = vec3(0.0);
   float sampleDelta = 0.025;
   float sampleCount = 0.0;

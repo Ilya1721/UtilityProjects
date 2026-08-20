@@ -56,6 +56,8 @@ namespace GLBViewer
     std::unique_ptr<Camera> mCamera;
     std::unique_ptr<PBRShaderProgram> mShader;
     std::unique_ptr<CubemapTexture> mIrradianceMap;
+    std::unique_ptr<CubemapTexture> mPrefilteredEnvMap;
+    std::unique_ptr<Texture2D> mBRDFLUT;
     WindowHandle mWindowHandle;
     CameraMovementState mCameraMovementState;
   };

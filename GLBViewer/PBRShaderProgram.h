@@ -38,6 +38,8 @@ namespace GLBViewer
     void setLightDir(const glm::vec3& lightDir) const;
     void setCameraPosition(const glm::vec3& cameraPosition) const;
     void setIrradianceMap(const CubemapTexture& texture) const;
+    void setPrefilteredEnvMap(const CubemapTexture& texture) const;
+    void setBRDFLUT(const Texture2D& texture) const;
 
    private:
     void setTexture(TextureData& textureData, Texture2D* texture, int textureUnit) const;
@@ -62,6 +64,8 @@ namespace GLBViewer
     int mLightDir;
     int mCameraPosition;
     int mIrradianceMap;
+    int mPrefilteredEnvMap;
+    int mBRDFLUT;
     mutable TextureData mNormalMap;
     mutable ColorTextureData mBaseColor;
     mutable MetallicRougnessTextureData mMetallicRoughness;

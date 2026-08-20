@@ -13,9 +13,6 @@ namespace GLBViewer
     void load(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 
    private:
-    int loadShader(const std::string& shaderPath, int shaderType) const;
-
-   private:
     int mVertexShader {};
     int mFragmentShader {};
     int mShaderProgram {};

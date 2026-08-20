@@ -16,4 +16,10 @@ namespace GLBViewer
     // top face
     -1, 1, -1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, 1
   };
+  constexpr float SQUARE_VERTICES[] = {
+    // bottom-left   bottom-right   top-right
+    -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+    // bottom-left   top-right      top-left
+    -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f
+  };
 }

@@ -96,7 +96,11 @@ namespace GLBViewer
     );
     IBL ibl(ENV_HDRI);
     mIrradianceMap = ibl.loadIrradianceMap();
+    mPrefilteredEnvMap = ibl.loadPrefilteredEnvMap();
+    mBRDFLUT = ibl.loadBRDFLUT();
     mShader->setIrradianceMap(*mIrradianceMap);
+    mShader->setPrefilteredEnvMap(*mPrefilteredEnvMap);
+    mShader->setBRDFLUT(*mBRDFLUT);
     mShader->setLightDir(glm::normalize(LIGHT_DIR));
     onViewportSizeChanged(width, height);
   }

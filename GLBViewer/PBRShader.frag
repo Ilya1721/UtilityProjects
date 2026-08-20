@@ -1,5 +1,8 @@
 #version 330 core
 
+#include "Common.glsl"
+#include "PBRCommon.glsl"
+
 in vec3 vertexPosition;
 in vec3 vertexNormal;
 in vec2 vertexUV;
@@ -18,13 +21,15 @@ uniform sampler2D metallicRoughness;
 uniform float metallicFactor;
 uniform float roughnessFactor;
 
+uniform sampler2D brdfLUT;
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilteredEnvMap;
 
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
 
-const float PI = 3.14159265359;
-const float LIGHT_INTENSITY = 1.0;
+const float DIRECT_LIGHT_INTENSITY = 1.0;
+const float MAX_REFLECTION_LOD = 4.0;
 
 vec4 getBaseColor()
 {
@@ -66,26 +71,12 @@ float getRoughness()
   return roughnessFactor * roughness;
 }
 
-float distributionGGX(vec3 N, vec3 H, float a)
+float distributionGGX(vec3 N, vec3 H, float roughness)
 {
-  float NdotH  = max(dot(N, H), 0.0);
+  float a = pow(roughness, 2.0);
+  float NdotH = max(dot(N, H), 0.0);
   float denominator = (pow(NdotH, 2.0) * (pow(a, 2.0) - 1.0) + 1.0);
   return pow(a, 2.0) / (PI * pow(denominator, 2.0));
-}
-
-float geometryGGX(float NdotDir, float k)
-{
-  return NdotDir / (NdotDir * (1.0 - k) + k);
-}
-
-float geometrySmith(vec3 N, vec3 V, vec3 L, float a)
-{
-  float k = pow(a + 1.0, 2.0) / 8.0;
-  float NdotV = max(dot(N, V), 0.0);
-  float NdotL = max(dot(N, L), 0.0);
-  float ggx1 = geometryGGX(NdotV, k);
-  float ggx2 = geometryGGX(NdotL, k);
-  return ggx1 * ggx2;
 }
 
 vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
@@ -94,7 +85,18 @@ vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
   return F0 + (1.0 - F0) * pow(1.0 - HdotV, 5.0);
 }
 
-vec3 getSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F)
+vec3 getIBLSpecular(vec3 N, vec3 V, vec3 F)
+{
+  vec3 R = reflect(-V, N);
+  float NdotV = max(dot(N, V), 0.0);
+  float roughness = getRoughness();
+  float lod = roughness * MAX_REFLECTION_LOD;
+  vec3 prefilteredColor = textureLod(prefilteredEnvMap, R, lod).rgb;
+  vec2 brdf = texture(brdfLUT, vec2(NdotV, roughness)).rg;
+  return prefilteredColor * (F * brdf.x + brdf.y);
+}
+
+vec3 getDirectSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F)
 {
   float roughness = getRoughness();
   float D = distributionGGX(N, H, roughness);
@@ -104,11 +106,17 @@ vec3 getSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F)
   return numerator / denominator;
 }
 
-vec3 getDiffuse(vec3 albedo, vec3 F, vec3 N, float metallic)
+vec3 getIBLDiffuse(vec3 albedo, vec3 F, vec3 N, float metallic)
 {
   vec3 irradiance = texture(irradianceMap, N).rgb;
   vec3 kD = (vec3(1.0) - F) * (1.0 - metallic);
   return kD * irradiance * albedo / PI;
+}
+
+vec3 getDirectDiffuse(vec3 albedo, vec3 F, vec3 N, vec3 L, float metallic)
+{
+  vec3 kD = (vec3(1.0) - F) * (1.0 - metallic);
+  return kD * albedo / PI;
 }
 
 void main()
@@ -123,8 +131,12 @@ void main()
   float NdotL = max(dot(N, L), 0.0);
   vec3 baseReflectivity = mix(vec3(0.04), albedo, metallic);
   vec3 F = fresnelSchlick(H, V, baseReflectivity);
-  vec3 specular = getSpecular(N, V, L, H, F);
-  vec3 diffuse = getDiffuse(albedo, F, N, metallic);
-  vec3 reflectedRadiance = (diffuse + specular) * NdotL * LIGHT_INTENSITY;
-  fragColor = vec4(albedo + reflectedRadiance, baseColor.a);
+  vec3 iblSpecular = getIBLSpecular(N, V, F);
+  vec3 directSpecular = getDirectSpecular(N, V, L, H, F);
+  vec3 iblDiffuse = getIBLDiffuse(albedo, F, N, metallic);
+  vec3 directDiffuse = getDirectDiffuse(albedo, F, N, L, metallic);
+  vec3 directLighting = (directDiffuse + directSpecular) * NdotL * DIRECT_LIGHT_INTENSITY;
+  vec3 iblLighting = iblDiffuse + iblSpecular;
+  vec3 color = directLighting + iblLighting;
+  fragColor = vec4(color, baseColor.a);
 }

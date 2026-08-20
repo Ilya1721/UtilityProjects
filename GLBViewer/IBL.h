@@ -5,7 +5,6 @@
 #include <string>
 
 #include "CubemapTexture.h"
-#include "FrameBuffer.h"
 #include "RenderBuffer.h"
 #include "Texture2D.h"
 
@@ -17,6 +16,8 @@ namespace GLBViewer
     IBL(const std::string& hdriFilePath);
 
     std::unique_ptr<CubemapTexture> loadIrradianceMap() const;
+    std::unique_ptr<CubemapTexture> loadPrefilteredEnvMap() const;
+    std::unique_ptr<Texture2D> loadBRDFLUT() const;
 
    private:
     std::unique_ptr<CubemapTexture> loadCubemap(
@@ -26,7 +27,6 @@ namespace GLBViewer
 
    private:
     std::unique_ptr<CubemapTexture> mEnvMap;
-    std::unique_ptr<FrameBuffer> mFrameBuffer;
-    std::unique_ptr<CubeRenderBuffer> mRenderBuffer;
+    std::unique_ptr<CubeRenderBuffer> mCubeRenderBuffer;
   };
 }

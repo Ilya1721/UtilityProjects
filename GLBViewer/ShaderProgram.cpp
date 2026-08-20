@@ -5,7 +5,63 @@
 #endif
 #include <glad/glad.h>
 
+#include <unordered_set>
+
 #include "FileUtils.h"
+
+namespace
+{
+  using namespace GLBViewer;
+
+  const std::string INCLUDE = "#include";
+
+  std::string assembleShader(const std::string& shaderPath)
+  {
+    size_t lastIncludePos = std::string::npos;
+    std::unordered_set<std::string> usedIncludePaths;
+    auto shaderCode = readFile(shaderPath);
+    while (true)
+    {
+      auto pos = shaderCode.find(INCLUDE);
+      if (pos == std::string::npos)
+      {
+        break;
+      }
+      lastIncludePos = pos;
+      shaderCode.erase(pos, INCLUDE.length() + 1);
+      auto pathStart = shaderCode.find('\"', pos);
+      auto pathEnd = shaderCode.find('\"', pathStart + 1);
+      std::string includePath(shaderCode, pathStart + 1, pathEnd - pathStart - 1);
+      shaderCode.erase(pathStart, includePath.length() + 2);
+      if (usedIncludePaths.find(includePath) == usedIncludePaths.end())
+      {
+        auto includedCode = assembleShader(includePath);
+        shaderCode.insert(lastIncludePos, includedCode);
+        lastIncludePos += includedCode.length();
+        usedIncludePaths.insert(includePath);
+      }
+    }
+    return shaderCode;
+  }
+
+  int loadShader(const std::string& shaderPath, int shaderType)
+  {
+    auto shader = glCreateShader(shaderType);
+    auto shaderCode = assembleShader(shaderPath);
+    auto stringArr = {shaderCode.c_str()};
+    auto lengthArr = {static_cast<int>(shaderCode.length())};
+    glShaderSource(shader, 1, stringArr.begin(), lengthArr.begin());
+    glCompileShader(shader);
+    GLint compileStatus = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+    if (compileStatus == GL_FALSE)
+    {
+      auto excMsg = "Could not compile shader -> " + shaderPath;
+      throw std::exception(excMsg.c_str());
+    }
+    return shader;
+  }
+}
 
 namespace GLBViewer
 {
@@ -42,24 +98,6 @@ namespace GLBViewer
     {
       throw std::exception("Could not link the shader program");
     }
-  }
-
-  int ShaderObject::loadShader(const std::string& shaderPath, int shaderType) const
-  {
-    auto shader = glCreateShader(shaderType);
-    auto shaderCode = readFile(shaderPath);
-    auto stringArr = {shaderCode.c_str()};
-    auto lengthArr = {static_cast<int>(shaderCode.length())};
-    glShaderSource(shader, 1, stringArr.begin(), lengthArr.begin());
-    glCompileShader(shader);
-    GLint compileStatus = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
-    if (compileStatus == GL_FALSE)
-    {
-      auto excMsg = "Could not compile shader -> " + shaderPath;
-      throw std::exception(excMsg.c_str());
-    }
-    return shader;
   }
 
   ShaderProgram::ShaderProgram(
