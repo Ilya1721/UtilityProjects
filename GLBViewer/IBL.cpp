@@ -29,13 +29,12 @@ namespace
     return image;
   }
 
-  void initCubemapTexture(bool useMipMaps)
+  void initCubemapTexture()
   {
-    auto minFilter = useMipMaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   }
 
@@ -70,7 +69,7 @@ namespace
         GL_FLOAT, nullptr
       );
     }
-    initCubemapTexture(false);
+    initCubemapTexture();
     return texture;
   }
 
@@ -89,7 +88,8 @@ namespace
         );
       }
     }
-    initCubemapTexture(true);
+    initCubemapTexture();
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(
       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, PREFILTERED_MAP_MAX_MIP_LEVELS - 1
     );
@@ -176,7 +176,11 @@ namespace GLBViewer
     shader.setEquirectangularMap(hdrTexture);
     shader.bind();
     auto viewSetter = [&shader](const glm::mat4& view) { shader.setView(view); };
-    return loadCubemap(ENV_MAP_SIZE, viewSetter);
+    auto envMap = loadCubemap(ENV_MAP_SIZE, viewSetter);
+    envMap->bind();
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    return envMap;
   }
 
   std::unique_ptr<CubemapTexture> IBL::loadIrradianceMap() const

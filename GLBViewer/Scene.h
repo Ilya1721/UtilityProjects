@@ -15,7 +15,6 @@ namespace GLBViewer
   class Scene
   {
    public:
-    Scene();
     void load(const std::filesystem::path& scenePath);
     void render(PBRShaderProgram* shader) const;
     const AABB& getSceneAABB() const;

@@ -37,6 +37,18 @@ namespace
     auto app = static_cast<Window*>(glfwGetWindowUserPointer(window));
     app->onViewportSizeChanged(width, height);
   }
+
+  void preInitSetup()
+  {
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+
+  void preStartSetup()
+  {
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    glClearColor(0.741f, 0.871f, 0.871f, 1.0f);
+  }
 }
 
 namespace GLBViewer
@@ -94,6 +106,7 @@ namespace GLBViewer
     mShader = std::make_unique<PBRShaderProgram>(
       PBR_VERTEX_SHADER_PATH, PBR_FRAGMENT_SHADER_PATH
     );
+    preInitSetup();
     IBL ibl(ENV_HDRI);
     mIrradianceMap = ibl.loadIrradianceMap();
     mPrefilteredEnvMap = ibl.loadPrefilteredEnvMap();
@@ -103,6 +116,7 @@ namespace GLBViewer
     mShader->setBRDFLUT(*mBRDFLUT);
     mShader->setLightDir(glm::normalize(LIGHT_DIR));
     onViewportSizeChanged(width, height);
+    preStartSetup();
   }
 
   void Window::onMouseMove(float cursorX, float cursorY)

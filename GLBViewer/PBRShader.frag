@@ -1,6 +1,5 @@
 #version 330 core
 
-#include "Common.glsl"
 #include "PBRCommon.glsl"
 
 in vec3 vertexPosition;
@@ -69,14 +68,6 @@ float getRoughness()
     roughness = texture(metallicRoughness, vertexUV).g;
   }
   return roughnessFactor * roughness;
-}
-
-float distributionGGX(vec3 N, vec3 H, float roughness)
-{
-  float a = pow(roughness, 2.0);
-  float NdotH = max(dot(N, H), 0.0);
-  float denominator = (pow(NdotH, 2.0) * (pow(a, 2.0) - 1.0) + 1.0);
-  return pow(a, 2.0) / (PI * pow(denominator, 2.0));
 }
 
 vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
