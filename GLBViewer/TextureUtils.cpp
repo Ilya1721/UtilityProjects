@@ -7,43 +7,61 @@
 
 #include "Constants.h"
 
-namespace
-{
-  using namespace GLBViewer;
-
-  int getInternalFormat(int colorChannels, bool useGammaCorrection)
-  {
-    if (useGammaCorrection)
-    {
-      return colorChannels == 3 ? GL_SRGB8 : GL_SRGB8_ALPHA8;
-    }
-    return colorChannels == 3 ? GL_RGB8 : GL_RGBA8;
-  }
-}
-
 namespace GLBViewer
 {
-  std::shared_ptr<Texture2D> createImageTexture(
-    const RegularImage& image, bool useGammaCorrection
-  )
+  int getFormat(int colorChannels)
   {
-    auto texture = std::make_shared<Texture2D>(image.width, image.height);
+    switch (colorChannels)
+    {
+      case 1:
+        return GL_R;
+      case 2:
+        return GL_RG;
+      case 3:
+        return GL_RGB;
+      case 4:
+        return GL_RGBA;
+    }
+    throw std::exception("Unsupported amount of color channels");
+  }
+
+  int getInternalFormat(int colorChannels, bool useSRGB)
+  {
+    if (useSRGB)
+    {
+      switch (colorChannels)
+      {
+        case 3:
+          return GL_SRGB8;
+        case 4:
+          return GL_SRGB8_ALPHA8;
+      }
+    }
+    switch (colorChannels)
+    {
+      case 1:
+        return GL_R8;
+      case 2:
+        return GL_RG8;
+      case 3:
+        return GL_RGB8;
+      case 4:
+        return GL_RGBA8;
+    }
+    throw std::exception("Unsupported amount of color channels");
+  }
+
+  std::unique_ptr<Texture2D> createScreenTexture(int width, int height)
+  {
+    auto texture = std::make_unique<Texture2D>(width, height);
     texture->bind();
-    auto format = image.colorChannels == 3 ? GL_RGB : GL_RGBA;
-    auto internalFormat = getInternalFormat(image.colorChannels, useGammaCorrection);
     glTexImage2D(
-      GL_TEXTURE_2D, 0, internalFormat, image.width, image.height, 0, format,
-      GL_UNSIGNED_BYTE, image.data
+      GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    float maxAnisotropyLevel = 0.0f;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropyLevel);
-    float anisotropyLevel = std::min(ANISOTROPIC_FILTERING_LEVEL, maxAnisotropyLevel);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropyLevel);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     return texture;
   }
 

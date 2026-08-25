@@ -3,6 +3,7 @@
 #include <fastgltf/core.hpp>
 #include <filesystem>
 
+#include "Image.h"
 #include "Mesh.h"
 #include "Texture2D.h"
 
@@ -17,14 +18,11 @@ namespace GLBViewer
     std::unique_ptr<Mesh> parseNode(const fastgltf::Node& node) const;
     std::unique_ptr<Mesh> parseMesh(const fastgltf::Node& node) const;
     PBRMaterial parseMaterial(const fastgltf::Node& node) const;
-    std::shared_ptr<Texture2D> getTexture(
-      const fastgltf::TextureInfo& textureInfo, bool useGammaCorrection
+    std::shared_ptr<Texture2D> parseTexture(
+      const fastgltf::TextureInfo& textureInfo, bool useSRGB
     ) const;
-    std::shared_ptr<Texture2D> loadTextureFromMemory(
-      const fastgltf::sources::BufferView& bufferViewSource, bool useGammaCorrection
-    ) const;
-    std::shared_ptr<Texture2D> loadTextureFromFile(
-      const char* filePath, bool useGammaCorrection
+    std::unique_ptr<RegularImage> loadImageFromMemory(
+      const fastgltf::sources::BufferView& bufferViewSource
     ) const;
     std::vector<Vertex> parseVertices(const fastgltf::Node& node) const;
 

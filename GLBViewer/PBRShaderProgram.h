@@ -40,22 +40,11 @@ namespace GLBViewer
     void setIrradianceMap(const CubemapTexture& texture) const;
     void setPrefilteredEnvMap(const CubemapTexture& texture) const;
     void setBRDFLUT(const Texture2D& texture) const;
+    void setOpaqueOffscreen(const Texture2D& texture) const;
+    void setViewportSize(const glm::vec2& viewportSize) const;
 
    private:
     void setTexture(TextureData& textureData, Texture2D* texture, int textureUnit) const;
-    void setTexture(
-      ColorTextureData& textureData,
-      Texture2D* texture,
-      const glm::vec4& factor,
-      int textureUnit
-    ) const;
-    void setTexture(
-      MetallicRougnessTextureData& textureData,
-      Texture2D* texture,
-      float metallicFactor,
-      float roughnessFactor,
-      int textureUnit
-    ) const;
 
    private:
     int mModel;
@@ -66,8 +55,14 @@ namespace GLBViewer
     int mIrradianceMap;
     int mPrefilteredEnvMap;
     int mBRDFLUT;
+    int mOpaqueOffscreen;
+    int mViewportSize;
+    int mIOR;
+    int mAlphaCutoff;
+    int mAlphaMode;
     mutable TextureData mNormalMap;
     mutable ColorTextureData mBaseColor;
+    mutable ColorTextureData mTransmission;
     mutable MetallicRougnessTextureData mMetallicRoughness;
   };
 }

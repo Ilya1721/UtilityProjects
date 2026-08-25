@@ -9,10 +9,14 @@
 #include <exception>
 
 #include "IBL.h"
+#include "TextureUtils.h"
 
 namespace
 {
   using namespace GLBViewer;
+
+  constexpr int SCREEN_FBO = 0;
+  constexpr int SCREEN_MASK = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
   void onMouseMove(GLFWwindow* window, double x, double y)
   {
@@ -107,6 +111,15 @@ namespace GLBViewer
       PBR_VERTEX_SHADER_PATH, PBR_FRAGMENT_SHADER_PATH
     );
     preInitSetup();
+    initIBL(width, height);
+    initOffscreenRendering(width, height);
+    mShader->setLightDir(glm::normalize(LIGHT_DIR));
+    onViewportSizeChanged(width, height);
+    preStartSetup();
+  }
+
+  void Window::initIBL(int width, int height)
+  {
     IBL ibl(ENV_HDRI);
     mIrradianceMap = ibl.loadIrradianceMap();
     mPrefilteredEnvMap = ibl.loadPrefilteredEnvMap();
@@ -114,9 +127,14 @@ namespace GLBViewer
     mShader->setIrradianceMap(*mIrradianceMap);
     mShader->setPrefilteredEnvMap(*mPrefilteredEnvMap);
     mShader->setBRDFLUT(*mBRDFLUT);
-    mShader->setLightDir(glm::normalize(LIGHT_DIR));
-    onViewportSizeChanged(width, height);
-    preStartSetup();
+  }
+
+  void Window::initOffscreenRendering(int width, int height)
+  {
+    mOpaqueColor = createScreenTexture(width, height);
+    mOffscreenFrameBuffer = std::make_unique<FrameBuffer>();
+    mOffscreenFrameBuffer->addColorAttachment(*mOpaqueColor, 0);
+    mOffscreenFrameBuffer->addDepthAttachment(width, height);
   }
 
   void Window::onMouseMove(float cursorX, float cursorY)
@@ -135,9 +153,13 @@ namespace GLBViewer
       auto endPosNDC = screenPosToNDC(cursorPos);
       mCamera->orbit(startPosNDC, endPosNDC);
     }
-    mShader->setView(mCamera->getView());
-    mShader->setCameraPosition(mCamera->getEye());
-    mvState.savedCursorPos = cursorPos;
+    if (mvState.isOrbitActive || mvState.isPanActive)
+    {
+      mScene->sortBlendMeshes(mCamera->getEye());
+      mShader->setView(mCamera->getView());
+      mShader->setCameraPosition(mCamera->getEye());
+      mvState.savedCursorPos = cursorPos;
+    }
   }
 
   void Window::onButtonPressed(int button, int action, int mods)
@@ -161,6 +183,7 @@ namespace GLBViewer
   {
     mViewport->resize(width, height);
     mShader->setProjection(mViewport->getProjection());
+    mShader->setViewportSize(glm::vec2(width, height));
   }
 
   void Window::loadScene(const std::filesystem::path& scenePath)
@@ -169,6 +192,7 @@ namespace GLBViewer
     const auto& sceneAABB = mScene->getSceneAABB();
     auto aspectRatio = mViewport->getAspectRatio();
     mCamera->adjust(sceneAABB, aspectRatio);
+    mScene->sortBlendMeshes(mCamera->getEye());
     mShader->setView(mCamera->getView());
     mShader->setCameraPosition(mCamera->getEye());
   }
@@ -177,7 +201,17 @@ namespace GLBViewer
   {
     while (!glfwWindowShouldClose(mWindowHandle.get()))
     {
-      mScene->render(mShader.get());
+      mShader->bind();
+      mOffscreenFrameBuffer->bind();
+      glClear(SCREEN_MASK);
+      mScene->renderOpaque(mShader.get());
+      mOffscreenFrameBuffer->copyPixels(
+        mOpaqueColor->getWidth(), mOpaqueColor->getHeight(), SCREEN_FBO, SCREEN_MASK
+      );
+      mShader->setOpaqueOffscreen(*mOpaqueColor);
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      mScene->renderTransmissive(mShader.get());
+      mScene->renderBlend(mShader.get());
       glfwSwapBuffers(mWindowHandle.get());
       glfwWaitEvents();
     }

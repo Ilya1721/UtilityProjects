@@ -12,6 +12,17 @@ uniform bool hasBaseColorTexture = false;
 uniform sampler2D baseColorTexture;
 uniform vec4 baseColorFactor;
 
+uniform bool hasTransmissionTexture = false;
+uniform sampler2D transmissionTexture;
+uniform float transmissionFactor;
+uniform float ior;
+
+const int ALPHA_MODE_OPAQUE = 0;
+const int ALPHA_MODE_BLEND = 1;
+const int ALPHA_MODE_MASK = 2;
+uniform int alphaMode;
+uniform float alphaCutoff;
+
 uniform bool hasNormalMap = false;
 uniform sampler2D normalMap;
 
@@ -24,10 +35,13 @@ uniform sampler2D brdfLUT;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilteredEnvMap;
 
+uniform sampler2D opaqueOffscreen;
+
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
+uniform vec2 viewportSize;
 
-const float DIRECT_LIGHT_INTENSITY = 1.0;
+const float DIRECT_LIGHT_INTENSITY = 2.5;
 const float MAX_REFLECTION_LOD = 4.0;
 
 vec4 getBaseColor()
@@ -70,6 +84,16 @@ float getRoughness()
   return roughnessFactor * roughness;
 }
 
+float getTransmission()
+{
+  float transmission = 1.0;
+  if (hasTransmissionTexture)
+  {
+    transmission = texture(transmissionTexture, vertexUV).r;
+  }
+  return transmissionFactor * transmission;
+}
+
 vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
 {
   float HdotV = max(dot(H, V), 0.0);
@@ -110,9 +134,28 @@ vec3 getDirectDiffuse(vec3 albedo, vec3 F, vec3 N, vec3 L, float metallic)
   return kD * albedo / PI;
 }
 
+vec3 getTransmissionAffectedColor(vec3 surfaceColor, vec3 H, vec3 V)
+{
+  float transmission = getTransmission();
+  if (transmission < 1e-4 || alphaMode == ALPHA_MODE_BLEND)
+  {
+    return surfaceColor;
+  }
+  vec2 screenUV = gl_FragCoord.xy / viewportSize;
+  vec3 transmittedColor = texture(opaqueOffscreen, screenUV).rgb;
+  float F0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
+  vec3 F = fresnelSchlick(H, V, vec3(F0));
+  vec3 transmissionWeight = transmission * (1.0 - F);
+  return surfaceColor + transmittedColor * transmissionWeight;
+}
+
 void main()
 {
   vec4 baseColor = getBaseColor();
+  if (alphaMode == ALPHA_MODE_MASK && baseColor.a < alphaCutoff)
+  {
+    discard;
+  }
   vec3 albedo = baseColor.rgb;
   float metallic = getMetallic();
   vec3 N = getVertexNormal();
@@ -128,6 +171,7 @@ void main()
   vec3 directDiffuse = getDirectDiffuse(albedo, F, N, L, metallic);
   vec3 directLighting = (directDiffuse + directSpecular) * NdotL * DIRECT_LIGHT_INTENSITY;
   vec3 iblLighting = iblDiffuse + iblSpecular;
-  vec3 color = directLighting + iblLighting;
+  vec3 surfaceColor = directLighting + iblLighting;
+  vec3 color = getTransmissionAffectedColor(surfaceColor, H ,V);
   fragColor = vec4(color, baseColor.a);
 }

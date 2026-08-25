@@ -9,9 +9,9 @@
 
 namespace GLBViewer
 {
-  std::shared_ptr<Texture2D> createImageTexture(
-    const RegularImage& image, bool useGammaCorrection
-  );
+  int getFormat(int colorChannels);
+  int getInternalFormat(int colorChannels, bool useSRGB);
+  std::unique_ptr<Texture2D> createScreenTexture(int width, int height);
   std::unique_ptr<RegularImage> loadImage(const std::string& filePath);
   std::unique_ptr<RegularImage> loadImage(const unsigned char* bytes, int bytesLength);
 }

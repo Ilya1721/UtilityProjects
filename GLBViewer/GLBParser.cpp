@@ -1,10 +1,108 @@
 #include "GLBParser.h"
 
+#ifdef __gl_h_
+#undef __gl_h_
+#endif
+#include <glad/glad.h>
+
 #include <fastgltf/tools.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "TextureUtils.h"
+
+namespace
+{
+  using namespace GLBViewer;
+
+  int wrapGltfToOpengl(fastgltf::Wrap wrapGltf)
+  {
+    switch (wrapGltf)
+    {
+      case fastgltf::Wrap::Repeat:
+        return GL_REPEAT;
+      case fastgltf::Wrap::ClampToEdge:
+        return GL_CLAMP_TO_EDGE;
+      case fastgltf::Wrap::MirroredRepeat:
+        return GL_MIRRORED_REPEAT;
+    }
+    return GL_REPEAT;
+  }
+
+  AlphaMode alphaModeGltfToCustom(fastgltf::AlphaMode alphaMode)
+  {
+    switch (alphaMode)
+    {
+      case fastgltf::AlphaMode::Opaque:
+        return AlphaMode::OPAQUE;
+      case fastgltf::AlphaMode::Mask:
+        return AlphaMode::MASK;
+      case fastgltf::AlphaMode::Blend:
+        return AlphaMode::BLEND;
+    }
+    return AlphaMode::OPAQUE;
+  }
+
+  int filterGltfToOpengl(const fastgltf::Optional<fastgltf::Filter>& filter)
+  {
+    if (!filter.has_value())
+    {
+      return GL_LINEAR;
+    }
+    switch (filter.value())
+    {
+      case fastgltf::Filter::Nearest:
+        return GL_NEAREST;
+      case fastgltf::Filter::NearestMipMapLinear:
+        return GL_NEAREST_MIPMAP_LINEAR;
+      case fastgltf::Filter::NearestMipMapNearest:
+        return GL_NEAREST_MIPMAP_NEAREST;
+      case fastgltf::Filter::Linear:
+        return GL_LINEAR;
+      case fastgltf::Filter::LinearMipMapLinear:
+        return GL_LINEAR_MIPMAP_LINEAR;
+      case fastgltf::Filter::LinearMipMapNearest:
+        return GL_LINEAR_MIPMAP_NEAREST;
+    }
+    return GL_LINEAR;
+  }
+
+  void initSamplerParameters(const fastgltf::Sampler& sampler)
+  {
+    auto wrapS = wrapGltfToOpengl(sampler.wrapS);
+    auto wrapT = wrapGltfToOpengl(sampler.wrapT);
+    auto minFilter = filterGltfToOpengl(sampler.minFilter);
+    auto magFilter = filterGltfToOpengl(sampler.magFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+    if (minFilter != GL_NEAREST && minFilter != GL_LINEAR)
+    {
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+  }
+
+  std::shared_ptr<Texture2D> loadTexture(
+    const RegularImage& image, const fastgltf::Sampler& sampler, bool useSRGB
+  )
+  {
+    auto texture = std::make_shared<Texture2D>(image.width, image.height);
+    texture->bind();
+    auto format = getFormat(image.colorChannels);
+    auto internalFormat = getInternalFormat(image.colorChannels, useSRGB);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, internalFormat, image.width, image.height, 0, format,
+      GL_UNSIGNED_BYTE, image.data
+    );
+    initSamplerParameters(sampler);
+    float maxAnisotropyLevel = 0.0f;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropyLevel);
+    float anisotropyLevel = std::min(ANISOTROPIC_FILTERING_LEVEL, maxAnisotropyLevel);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropyLevel);
+    return texture;
+  }
+}
 
 namespace GLBViewer
 {
@@ -90,15 +188,15 @@ namespace GLBViewer
     return vertices;
   }
 
-  std::shared_ptr<Texture2D> GLBParser::loadTextureFromMemory(
-    const fastgltf::sources::BufferView& bufferViewSource, bool useGammaCorrection
+  std::unique_ptr<RegularImage> GLBParser::loadImageFromMemory(
+    const fastgltf::sources::BufferView& bufferViewSource
   ) const
   {
     const auto& bufferView = mAsset->bufferViews[bufferViewSource.bufferViewIndex];
     const auto& buffer = mAsset->buffers[bufferView.bufferIndex];
-    std::shared_ptr<Texture2D> texture;
+    std::unique_ptr<RegularImage> image;
     std::visit(
-      [&texture, &bufferView, useGammaCorrection](auto&& data)
+      [&image, &bufferView](auto&& data)
       {
         using BufferDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<BufferDataType, fastgltf::sources::Array>)
@@ -106,25 +204,16 @@ namespace GLBViewer
           auto convertedData = reinterpret_cast<const unsigned char*>(
             data.bytes.data() + bufferView.byteOffset
           );
-          auto image = loadImage(convertedData, data.bytes.size());
-          texture = createImageTexture(*image, useGammaCorrection);
+          image = loadImage(convertedData, data.bytes.size());
         }
       },
       buffer.data
     );
-    return texture;
+    return image;
   }
 
-  std::shared_ptr<Texture2D> GLBParser::loadTextureFromFile(
-    const char* filePath, bool useGammaCorrection
-  ) const
-  {
-    auto image = loadImage(filePath);
-    return createImageTexture(*image, useGammaCorrection);
-  }
-
-  std::shared_ptr<Texture2D> GLBParser::getTexture(
-    const fastgltf::TextureInfo& textureInfo, bool useGammaCorrection
+  std::shared_ptr<Texture2D> GLBParser::parseTexture(
+    const fastgltf::TextureInfo& textureInfo, bool useSRGB
   ) const
   {
     auto textureIndex = textureInfo.textureIndex;
@@ -135,22 +224,24 @@ namespace GLBViewer
     }
     const auto& textureGltf = mAsset->textures[textureIndex];
     const auto& imageGltf = mAsset->images[textureGltf.imageIndex.value()];
-    std::shared_ptr<Texture2D> texture;
+    std::unique_ptr<RegularImage> image;
     std::visit(
-      [this, &imageGltf, &texture, useGammaCorrection](auto&& data)
+      [this, &imageGltf, &image](auto&& data)
       {
         using ImageDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::BufferView>)
         {
-          texture = loadTextureFromMemory(data, useGammaCorrection);
+          image = loadImageFromMemory(data);
         }
         else if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::URI>)
         {
-          texture = loadTextureFromFile(data.uri.c_str(), useGammaCorrection);
+          image = loadImage(data.uri.c_str());
         }
       },
       imageGltf.data
     );
+    const auto& samplerGltf = mAsset->samplers[textureGltf.samplerIndex.value()];
+    auto texture = loadTexture(*image, samplerGltf, useSRGB);
     mTextureMap.insert({textureIndex, texture});
     return texture;
   }
@@ -170,19 +261,32 @@ namespace GLBViewer
       glm::make_vec4(materialGltf.pbrData.baseColorFactor.data());
     material.metallicFactor = materialGltf.pbrData.metallicFactor;
     material.rougnessFactor = materialGltf.pbrData.roughnessFactor;
+    material.ior = materialGltf.ior;
+    material.alphaCutoff = materialGltf.alphaCutoff;
+    material.alphaMode = alphaModeGltfToCustom(materialGltf.alphaMode);
     if (materialGltf.pbrData.baseColorTexture.has_value())
     {
       const auto& textureInfo = materialGltf.pbrData.baseColorTexture.value();
-      material.baseColorTexture = getTexture(textureInfo, true);
+      material.baseColorTexture = parseTexture(textureInfo, true);
     }
     if (materialGltf.normalTexture.has_value())
     {
-      material.normalMap = getTexture(materialGltf.normalTexture.value(), false);
+      material.normalMap = parseTexture(materialGltf.normalTexture.value(), false);
     }
     if (materialGltf.pbrData.metallicRoughnessTexture.has_value())
     {
       material.metallicRougnessTexture =
-        getTexture(materialGltf.pbrData.metallicRoughnessTexture.value(), false);
+        parseTexture(materialGltf.pbrData.metallicRoughnessTexture.value(), false);
+    }
+    if (materialGltf.transmission)
+    {
+      const auto& transmission = materialGltf.transmission;
+      material.transmissionFactor = transmission->transmissionFactor;
+      if (transmission->transmissionTexture.has_value())
+      {
+        material.transmissiveTexture =
+          parseTexture(transmission->transmissionTexture.value(), false);
+      }
     }
     return material;
   }

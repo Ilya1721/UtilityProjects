@@ -15,6 +15,8 @@ namespace
   constexpr int IRRADIANCE_MAP_UNIT = 3;
   constexpr int PREFILTERED_ENV_MAP_UNIT = 4;
   constexpr int BRDF_LUT_UNIT = 5;
+  constexpr int TRANSMISSION_TEXTURE_UNIT = 6;
+  constexpr int OPAQUE_OFFSCREEN_TEXTURE_UNIT = 7;
 }
 
 namespace GLBViewer
@@ -38,9 +40,17 @@ namespace GLBViewer
     mMetallicRoughness.roughnessFactor = getUniformLocation("roughnessFactor");
     mMetallicRoughness.isAvailable = getUniformLocation("hasMetallicRoughness");
     mMetallicRoughness.unit = getUniformLocation("metallicRoughness");
+    mTransmission.factor = getUniformLocation("transmissionFactor");
+    mTransmission.unit = getUniformLocation("transmissionTexture");
+    mTransmission.isAvailable = getUniformLocation("hasTransmissionTexture");
     mPrefilteredEnvMap = getUniformLocation("prefilteredEnvMap");
     mIrradianceMap = getUniformLocation("irradianceMap");
     mBRDFLUT = getUniformLocation("brdfLUT");
+    mOpaqueOffscreen = getUniformLocation("opaqueOffscreen");
+    mIOR = getUniformLocation("ior");
+    mAlphaCutoff = getUniformLocation("alphaCutoff");
+    mAlphaMode = getUniformLocation("alphaMode");
+    mViewportSize = getUniformLocation("viewportSize");
   }
 
   void PBRShaderProgram::setModel(const glm::mat4& model) const
@@ -70,42 +80,25 @@ namespace GLBViewer
     glBindTextureUnit(textureUnit, texture ? texture->getId() : 0);
   }
 
-  void PBRShaderProgram::setTexture(
-    ColorTextureData& textureData,
-    Texture2D* texture,
-    const glm::vec4& factor,
-    int textureUnit
-  ) const
-  {
-    setTexture(textureData, texture, textureUnit);
-    glUniform4fv(textureData.factor, 1, glm::value_ptr(factor));
-  }
-
-  void PBRShaderProgram::setTexture(
-    MetallicRougnessTextureData& textureData,
-    Texture2D* texture,
-    float metallicFactor,
-    float roughnessFactor,
-    int textureUnit
-  ) const
-  {
-    setTexture(textureData, texture, textureUnit);
-    glUniform1f(textureData.metallicFactor, metallicFactor);
-    glUniform1f(textureData.roughnessFactor, roughnessFactor);
-  }
-
   void PBRShaderProgram::setMaterial(const PBRMaterial& material) const
   {
     bind();
-    setTexture(
-      mBaseColor, material.baseColorTexture.get(), material.baseColorFactor,
-      BASE_COLOR_TEXTURE_UNIT
-    );
+    setTexture(mBaseColor, material.baseColorTexture.get(), BASE_COLOR_TEXTURE_UNIT);
+    glUniform4fv(mBaseColor.factor, 1, glm::value_ptr(material.baseColorFactor));
     setTexture(mNormalMap, material.normalMap.get(), NORMAL_MAP_TEXTURE_UNIT);
     setTexture(
-      mMetallicRoughness, material.metallicRougnessTexture.get(), material.metallicFactor,
-      material.rougnessFactor, METALLIC_ROUGHNESS_TEXTURE_UNIT
+      mMetallicRoughness, material.metallicRougnessTexture.get(),
+      METALLIC_ROUGHNESS_TEXTURE_UNIT
     );
+    glUniform1f(mMetallicRoughness.metallicFactor, material.metallicFactor);
+    glUniform1f(mMetallicRoughness.roughnessFactor, material.rougnessFactor);
+    setTexture(
+      mTransmission, material.transmissiveTexture.get(), TRANSMISSION_TEXTURE_UNIT
+    );
+    glUniform1f(mTransmission.factor, material.transmissionFactor);
+    glUniform1f(mIOR, material.ior);
+    glUniform1f(mAlphaCutoff, material.alphaCutoff);
+    glUniform1i(mAlphaMode, static_cast<int>(material.alphaMode));
   }
 
   void PBRShaderProgram::setLightDir(const glm::vec3& lightDir) const
@@ -137,5 +130,18 @@ namespace GLBViewer
     bind();
     glUniform1i(mBRDFLUT, BRDF_LUT_UNIT);
     glBindTextureUnit(BRDF_LUT_UNIT, texture.getId());
+  }
+
+  void PBRShaderProgram::setOpaqueOffscreen(const Texture2D& texture) const
+  {
+    bind();
+    glUniform1i(mOpaqueOffscreen, OPAQUE_OFFSCREEN_TEXTURE_UNIT);
+    glBindTextureUnit(OPAQUE_OFFSCREEN_TEXTURE_UNIT, texture.getId());
+  }
+
+  void PBRShaderProgram::setViewportSize(const glm::vec2& viewportSize) const
+  {
+    bind();
+    glUniform2fv(mViewportSize, 1, glm::value_ptr(viewportSize));
   }
 }

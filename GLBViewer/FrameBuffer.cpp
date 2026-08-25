@@ -7,12 +7,10 @@
 
 namespace GLBViewer
 {
-  FrameBuffer::FrameBuffer(int width, int height)
+  FrameBuffer::FrameBuffer()
   {
     glGenFramebuffers(1, &mFBO);
     glGenRenderbuffers(1, &mRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRBO);
   }
 
   FrameBuffer::~FrameBuffer()
@@ -21,9 +19,42 @@ namespace GLBViewer
     glDeleteFramebuffers(1, &mRBO);
   }
 
+  void FrameBuffer::addColorAttachment(const Texture2D& texture, int mipLevel) const
+  {
+    bind();
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), mipLevel
+    );
+  }
+
+  void FrameBuffer::addColorAttachment(
+    const CubemapTexture& texture, int faceIdx, int mipLevel
+  ) const
+  {
+    bind();
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
+      texture.getId(), mipLevel
+    );
+  }
+
+  void FrameBuffer::addDepthAttachment(int width, int height) const
+  {
+    bind();
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRBO);
+  }
+
   void FrameBuffer::bind() const
   {
     glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, mRBO);
+  }
+
+  void FrameBuffer::copyPixels(int width, int height, int targetFBO, int mask) const
+  {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFBO);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, mask, GL_NEAREST);
   }
 }

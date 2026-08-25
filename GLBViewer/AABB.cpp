@@ -38,4 +38,9 @@ namespace GLBViewer
   {
     return mMax;
   }
+
+  glm::vec3 AABB::getCenter() const
+  {
+    return 0.5f * (mMin + mMax);
+  }
 }

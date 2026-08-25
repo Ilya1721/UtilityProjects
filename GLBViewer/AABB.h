@@ -14,6 +14,7 @@ namespace GLBViewer
     void apply(const glm::mat4& transform);
     const glm::vec3& getMin() const;
     const glm::vec3& getMax() const;
+    glm::vec3 getCenter() const;
 
    private:
     glm::vec3 mMin {std::numeric_limits<float>::max()};

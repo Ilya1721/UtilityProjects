@@ -149,8 +149,7 @@ namespace GLBViewer
   ) const
   {
     auto cubemap = createCubemap(mapSize);
-    auto frameBuffer = std::make_unique<FrameBuffer>(mapSize, mapSize);
-    frameBuffer->bind();
+    auto frameBuffer = std::make_unique<FrameBuffer>();
     mCubeRenderBuffer->bind();
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -158,10 +157,7 @@ namespace GLBViewer
     for (size_t faceIdx = 0; faceIdx < 6; ++faceIdx)
     {
       viewSetter(CAPTURE_VIEWS[faceIdx]);
-      glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
-        cubemap->getId(), 0
-      );
+      frameBuffer->addColorAttachment(*cubemap, faceIdx, 0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -204,9 +200,7 @@ namespace GLBViewer
     shader.setProjection(CAPTURE_PROJECTION);
     shader.setEnvMap(*mEnvMap);
     shader.bind();
-    auto frameBuffer =
-      std::make_unique<FrameBuffer>(PREFILTERED_MAP_SIZE, PREFILTERED_MAP_SIZE);
-    frameBuffer->bind();
+    auto frameBuffer = std::make_unique<FrameBuffer>();
     mCubeRenderBuffer->bind();
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -219,10 +213,7 @@ namespace GLBViewer
       for (size_t faceIdx = 0; faceIdx < 6; ++faceIdx)
       {
         shader.setView(CAPTURE_VIEWS[faceIdx]);
-        glFramebufferTexture2D(
-          GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
-          cubemap->getId(), level
-        );
+        frameBuffer->addColorAttachment(*cubemap, faceIdx, level);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 36);
       }
@@ -241,15 +232,12 @@ namespace GLBViewer
     auto squareRenderBuffer = std::make_unique<SquareRenderBuffer>();
     squareRenderBuffer->sendDataToGPU();
     squareRenderBuffer->bind();
-    auto frameBuffer = std::make_unique<FrameBuffer>(viewportWidth, viewportHeight);
-    frameBuffer->bind();
+    auto frameBuffer = std::make_unique<FrameBuffer>();
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     glViewport(0, 0, viewportWidth, viewportHeight);
     glDisable(GL_DEPTH_TEST);
-    glFramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->getId(), 0
-    );
+    frameBuffer->addColorAttachment(*texture, 0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, viewport[2], viewport[3]);
