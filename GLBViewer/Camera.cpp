@@ -13,6 +13,8 @@ namespace
   using namespace GLBViewer;
   const float FOV_Y_COTANGENT = glm::cot(glm::radians(0.5f * FOV));
   constexpr float PADDING = 1.1f;
+  constexpr float EYE_TARGET_MIN_DIST_PARAM = 0.1f;
+  constexpr float ZOOM_SPEED = 0.2f;
 
   glm::vec3 projectOnSphere(const glm::vec2& point)
   {
@@ -43,6 +45,7 @@ namespace GLBViewer
     mEye = glm::vec3(0.0f, 0.0f, max.z + distance);
     mUp = glm::vec3(0.0f, 1.0f, 0.0f);
     mView = glm::lookAt(mEye, mTarget, mUp);
+    mEyeTargetInitialDistance = glm::length(mTarget - mEye);
   }
 
   void Camera::orbit(const glm::vec3& startPosNDC, const glm::vec3& endPosNDC)
@@ -77,11 +80,16 @@ namespace GLBViewer
     mView = glm::lookAt(mEye, mTarget, mUp);
   }
 
-  void Camera::zoom(float speed)
+  void Camera::zoom(float scrollSign)
   {
-    if (glm::length(mTarget - mEye) > speed)
+    auto speed = scrollSign * ZOOM_SPEED * mEyeTargetInitialDistance;
+    auto eyeTargetDistance = glm::length(mTarget - mEye);
+    auto speedParam = std::min(eyeTargetDistance / mEyeTargetInitialDistance, 1.0f);
+    auto adjustedSpeed = speedParam * speed;
+    auto minDistance = EYE_TARGET_MIN_DIST_PARAM * mEyeTargetInitialDistance;
+    if (eyeTargetDistance - minDistance > adjustedSpeed)
     {
-      mEye += glm::normalize(mTarget - mEye) * speed;
+      mEye += glm::normalize(mTarget - mEye) * adjustedSpeed;
       mView = glm::lookAt(mEye, mTarget, mUp);
     }
   }
