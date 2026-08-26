@@ -15,8 +15,9 @@ namespace
   constexpr int IRRADIANCE_MAP_UNIT = 3;
   constexpr int PREFILTERED_ENV_MAP_UNIT = 4;
   constexpr int BRDF_LUT_UNIT = 5;
-  constexpr int TRANSMISSION_TEXTURE_UNIT = 6;
+  constexpr int TRANSMISSIVE_TEXTURE_UNIT = 6;
   constexpr int OPAQUE_OFFSCREEN_TEXTURE_UNIT = 7;
+  constexpr int EMISSIVE_TEXTURE_UNIT = 8;
 }
 
 namespace GLBViewer
@@ -40,9 +41,13 @@ namespace GLBViewer
     mMetallicRoughness.roughnessFactor = getUniformLocation("roughnessFactor");
     mMetallicRoughness.isAvailable = getUniformLocation("hasMetallicRoughness");
     mMetallicRoughness.unit = getUniformLocation("metallicRoughness");
-    mTransmission.factor = getUniformLocation("transmissionFactor");
-    mTransmission.unit = getUniformLocation("transmissionTexture");
-    mTransmission.isAvailable = getUniformLocation("hasTransmissionTexture");
+    mTransmissive.factor = getUniformLocation("transmissiveFactor");
+    mTransmissive.unit = getUniformLocation("transmissiveTexture");
+    mTransmissive.isAvailable = getUniformLocation("hasTransmissiveTexture");
+    mEmissive.factor = getUniformLocation("emissiveFactor");
+    mEmissive.isAvailable = getUniformLocation("hasEmissiveTexture");
+    mEmissive.unit = getUniformLocation("emissiveTexture");
+    mEmissiveStrength = getUniformLocation("emissiveStrength");
     mPrefilteredEnvMap = getUniformLocation("prefilteredEnvMap");
     mIrradianceMap = getUniformLocation("irradianceMap");
     mBRDFLUT = getUniformLocation("brdfLUT");
@@ -93,9 +98,12 @@ namespace GLBViewer
     glUniform1f(mMetallicRoughness.metallicFactor, material.metallicFactor);
     glUniform1f(mMetallicRoughness.roughnessFactor, material.rougnessFactor);
     setTexture(
-      mTransmission, material.transmissiveTexture.get(), TRANSMISSION_TEXTURE_UNIT
+      mTransmissive, material.transmissiveTexture.get(), TRANSMISSIVE_TEXTURE_UNIT
     );
-    glUniform1f(mTransmission.factor, material.transmissionFactor);
+    glUniform1f(mTransmissive.factor, material.transmissiveFactor);
+    setTexture(mEmissive, material.emissiveTexture.get(), EMISSIVE_TEXTURE_UNIT);
+    glUniform3fv(mEmissive.factor, 1, glm::value_ptr(material.emissiveFactor));
+    glUniform1f(mEmissiveStrength, material.emissiveStrength);
     glUniform1f(mIOR, material.ior);
     glUniform1f(mAlphaCutoff, material.alphaCutoff);
     glUniform1i(mAlphaMode, static_cast<int>(material.alphaMode));

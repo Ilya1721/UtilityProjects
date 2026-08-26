@@ -12,9 +12,14 @@ uniform bool hasBaseColorTexture = false;
 uniform sampler2D baseColorTexture;
 uniform vec4 baseColorFactor;
 
-uniform bool hasTransmissionTexture = false;
-uniform sampler2D transmissionTexture;
-uniform float transmissionFactor;
+uniform bool hasTransmissiveTexture = false;
+uniform sampler2D transmissiveTexture;
+uniform float transmissiveFactor;
+
+uniform bool hasEmissiveTexture = false;
+uniform sampler2D emissiveTexture;
+uniform vec3 emissiveFactor;
+uniform float emissiveStrength;
 uniform float ior;
 
 const int ALPHA_MODE_OPAQUE = 0;
@@ -84,14 +89,24 @@ float getRoughness()
   return roughnessFactor * roughness;
 }
 
-float getTransmission()
+float getTransmissive()
 {
-  float transmission = 1.0;
-  if (hasTransmissionTexture)
+  float transmissive = 1.0;
+  if (hasTransmissiveTexture)
   {
-    transmission = texture(transmissionTexture, vertexUV).r;
+    transmissive = texture(transmissiveTexture, vertexUV).r;
   }
-  return transmissionFactor * transmission;
+  return transmissiveFactor * transmissive;
+}
+
+vec3 getEmissive()
+{
+  vec3 emissive = vec3(1.0);
+  if (hasEmissiveTexture)
+  {
+    emissive = texture(emissiveTexture, vertexUV).rgb;
+  }
+  return emissiveStrength * emissiveFactor * emissive;
 }
 
 vec3 directFresnelSchlick(vec3 H, vec3 V, vec3 F0)
@@ -138,10 +153,10 @@ vec3 getDirectDiffuse(vec3 albedo, vec3 F, vec3 N, vec3 L, float metallic)
   return kD * albedo / PI;
 }
 
-vec3 getTransmissionAffectedColor(vec3 surfaceColor, vec3 H, vec3 V)
+vec3 getTransmissiveAffectedColor(vec3 surfaceColor, vec3 H, vec3 V)
 {
-  float transmission = getTransmission();
-  if (transmission < 1e-4 || alphaMode == ALPHA_MODE_BLEND)
+  float transmissive = getTransmissive();
+  if (transmissive < 1e-4 || alphaMode == ALPHA_MODE_BLEND)
   {
     return surfaceColor;
   }
@@ -149,8 +164,8 @@ vec3 getTransmissionAffectedColor(vec3 surfaceColor, vec3 H, vec3 V)
   vec3 transmittedColor = texture(opaqueOffscreen, screenUV).rgb;
   float F0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
   vec3 F = directFresnelSchlick(H, V, vec3(F0));
-  vec3 transmissionWeight = transmission * (1.0 - F);
-  return surfaceColor + transmittedColor * transmissionWeight;
+  vec3 transmissiveWeight = transmissive * (1.0 - F);
+  return surfaceColor + transmittedColor * transmissiveWeight;
 }
 
 void main()
@@ -177,7 +192,8 @@ void main()
   vec3 directDiffuse = getDirectDiffuse(albedo, directF, N, L, metallic);
   vec3 directLighting = (directDiffuse + directSpecular) * NdotL * DIRECT_LIGHT_INTENSITY;
   vec3 iblLighting = iblDiffuse + iblSpecular;
-  vec3 surfaceColor = directLighting + iblLighting;
-  vec3 color = getTransmissionAffectedColor(surfaceColor, H, V);
+  vec3 emissiveLighting = getEmissive();
+  vec3 surfaceColor = directLighting + iblLighting + emissiveLighting;
+  vec3 color = getTransmissiveAffectedColor(surfaceColor, H, V);
   fragColor = vec4(color, baseColor.a);
 }

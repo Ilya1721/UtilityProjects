@@ -60,9 +60,11 @@ namespace GLBViewer
     int mIOR;
     int mAlphaCutoff;
     int mAlphaMode;
+    int mEmissiveStrength;
     mutable TextureData mNormalMap;
     mutable ColorTextureData mBaseColor;
-    mutable ColorTextureData mTransmission;
+    mutable ColorTextureData mTransmissive;
+    mutable ColorTextureData mEmissive;
     mutable MetallicRougnessTextureData mMetallicRoughness;
   };
 }

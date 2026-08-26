@@ -105,7 +105,7 @@ namespace GLBViewer
     {
       mBlendMeshes.push_back(mesh);
     }
-    else if (material.transmissionFactor > 0.0f)
+    else if (material.transmissiveFactor > 0.0f)
     {
       mTransmissiveMeshes.push_back(mesh);
     }

@@ -21,10 +21,13 @@ namespace GLBViewer
     std::shared_ptr<Texture2D> normalMap;
     std::shared_ptr<Texture2D> metallicRougnessTexture;
     std::shared_ptr<Texture2D> transmissiveTexture;
+    std::shared_ptr<Texture2D> emissiveTexture;
     glm::vec4 baseColorFactor = DEFAULT_BASE_COLOR;
+    glm::vec3 emissiveFactor {};
+    float emissiveStrength {};
     float metallicFactor {};
     float rougnessFactor {};
-    float transmissionFactor {};
+    float transmissiveFactor {};
     float ior {};
     float alphaCutoff {};
     AlphaMode alphaMode {};

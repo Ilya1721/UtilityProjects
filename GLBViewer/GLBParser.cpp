@@ -264,6 +264,8 @@ namespace GLBViewer
     material.ior = materialGltf.ior;
     material.alphaCutoff = materialGltf.alphaCutoff;
     material.alphaMode = alphaModeGltfToCustom(materialGltf.alphaMode);
+    material.emissiveStrength = materialGltf.emissiveStrength;
+    material.emissiveFactor = glm::make_vec3(materialGltf.emissiveFactor.data());
     if (materialGltf.pbrData.baseColorTexture.has_value())
     {
       const auto& textureInfo = materialGltf.pbrData.baseColorTexture.value();
@@ -278,10 +280,14 @@ namespace GLBViewer
       material.metallicRougnessTexture =
         parseTexture(materialGltf.pbrData.metallicRoughnessTexture.value(), false);
     }
+    if (materialGltf.emissiveTexture.has_value())
+    {
+      material.emissiveTexture = parseTexture(materialGltf.emissiveTexture.value(), true);
+    }
     if (materialGltf.transmission)
     {
       const auto& transmission = materialGltf.transmission;
-      material.transmissionFactor = transmission->transmissionFactor;
+      material.transmissiveFactor = transmission->transmissionFactor;
       if (transmission->transmissionTexture.has_value())
       {
         material.transmissiveTexture =
