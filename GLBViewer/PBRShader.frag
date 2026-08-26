@@ -94,26 +94,30 @@ float getTransmission()
   return transmissionFactor * transmission;
 }
 
-vec3 fresnelSchlick(vec3 H, vec3 V, vec3 F0)
+vec3 directFresnelSchlick(vec3 H, vec3 V, vec3 F0)
 {
   float HdotV = max(dot(H, V), 0.0);
   return F0 + (1.0 - F0) * pow(1.0 - HdotV, 5.0);
 }
 
-vec3 getIBLSpecular(vec3 N, vec3 V, vec3 F)
+vec3 iblFresnelSchlick(vec3 N, vec3 V, vec3 F0, float roughness)
+{
+  float NdotV = max(dot(N, V), 0.0);
+  return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - NdotV, 5.0);
+}
+
+vec3 getIBLSpecular(vec3 N, vec3 V, vec3 F, float roughness)
 {
   vec3 R = reflect(-V, N);
   float NdotV = max(dot(N, V), 0.0);
-  float roughness = getRoughness();
   float lod = roughness * MAX_REFLECTION_LOD;
   vec3 prefilteredColor = textureLod(prefilteredEnvMap, R, lod).rgb;
   vec2 brdf = texture(brdfLUT, vec2(NdotV, roughness)).rg;
   return prefilteredColor * (F * brdf.x + brdf.y);
 }
 
-vec3 getDirectSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F)
+vec3 getDirectSpecular(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F, float roughness)
 {
-  float roughness = getRoughness();
   float D = distributionGGX(N, H, roughness);
   float G = geometrySmith(N, V, L, roughness);
   vec3 numerator = D * G * F;
@@ -144,7 +148,7 @@ vec3 getTransmissionAffectedColor(vec3 surfaceColor, vec3 H, vec3 V)
   vec2 screenUV = gl_FragCoord.xy / viewportSize;
   vec3 transmittedColor = texture(opaqueOffscreen, screenUV).rgb;
   float F0 = pow((ior - 1.0) / (ior + 1.0), 2.0);
-  vec3 F = fresnelSchlick(H, V, vec3(F0));
+  vec3 F = directFresnelSchlick(H, V, vec3(F0));
   vec3 transmissionWeight = transmission * (1.0 - F);
   return surfaceColor + transmittedColor * transmissionWeight;
 }
@@ -158,20 +162,22 @@ void main()
   }
   vec3 albedo = baseColor.rgb;
   float metallic = getMetallic();
+  float roughness = getRoughness();
   vec3 N = getVertexNormal();
   vec3 L = -lightDir;
   vec3 V = normalize(cameraPosition - vertexPosition);
   vec3 H = normalize(V + L);
   float NdotL = max(dot(N, L), 0.0);
   vec3 baseReflectivity = mix(vec3(0.04), albedo, metallic);
-  vec3 F = fresnelSchlick(H, V, baseReflectivity);
-  vec3 iblSpecular = getIBLSpecular(N, V, F);
-  vec3 directSpecular = getDirectSpecular(N, V, L, H, F);
-  vec3 iblDiffuse = getIBLDiffuse(albedo, F, N, metallic);
-  vec3 directDiffuse = getDirectDiffuse(albedo, F, N, L, metallic);
+  vec3 iblF = iblFresnelSchlick(N, V, baseReflectivity, roughness);
+  vec3 iblSpecular = getIBLSpecular(N, V, iblF, roughness);
+  vec3 iblDiffuse = getIBLDiffuse(albedo, iblF, N, metallic);
+  vec3 directF = directFresnelSchlick(H, V, baseReflectivity);
+  vec3 directSpecular = getDirectSpecular(N, V, L, H, directF, roughness);
+  vec3 directDiffuse = getDirectDiffuse(albedo, directF, N, L, metallic);
   vec3 directLighting = (directDiffuse + directSpecular) * NdotL * DIRECT_LIGHT_INTENSITY;
   vec3 iblLighting = iblDiffuse + iblSpecular;
   vec3 surfaceColor = directLighting + iblLighting;
-  vec3 color = getTransmissionAffectedColor(surfaceColor, H ,V);
+  vec3 color = getTransmissionAffectedColor(surfaceColor, H, V);
   fragColor = vec4(color, baseColor.a);
 }

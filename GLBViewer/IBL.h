@@ -20,8 +20,10 @@ namespace GLBViewer
     std::unique_ptr<Texture2D> loadBRDFLUT() const;
 
    private:
-    std::unique_ptr<CubemapTexture> loadCubemap(
-      int mapSize, const std::function<void(const glm::mat4& view)>& viewSetter
+    void renderToCubemap(
+      const CubemapTexture& cubemap,
+      int viewportSize,
+      const std::function<void(const glm::mat4& view)>& viewSetter
     ) const;
     std::unique_ptr<CubemapTexture> loadEnvMap(const Texture2D& hdrTexture) const;
 

@@ -13,21 +13,11 @@
 #include "Image.h"
 #include "IrradianceMapShaderProgram.h"
 #include "PrefilteredEnvMapShaderProgram.h"
+#include "TextureUtils.h"
 
 namespace
 {
   using namespace GLBViewer;
-
-  std::unique_ptr<HDRI> loadHDRI(const std::string& filePath)
-  {
-    auto image = std::make_unique<HDRI>();
-    stbi_set_flip_vertically_on_load(true);
-    image->data = stbi_loadf(
-      filePath.c_str(), &image->width, &image->height, &image->colorChannels, 0
-    );
-    stbi_set_flip_vertically_on_load(false);
-    return image;
-  }
 
   void initCubemapTexture()
   {
@@ -80,11 +70,11 @@ namespace
     for (size_t level = 0; level < PREFILTERED_MAP_MAX_MIP_LEVELS; ++level)
     {
       size_t levelSize = PREFILTERED_MAP_SIZE * std::pow(0.5, level);
-      for (size_t face = 0; face < 6; ++face)
+      for (size_t faceIdx = 0; faceIdx < 6; ++faceIdx)
       {
         glTexImage2D(
-          GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, level, GL_RGB16F, levelSize, levelSize,
-          0, GL_RGB, GL_FLOAT, nullptr
+          GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx, level, GL_RGB16F, levelSize,
+          levelSize, 0, GL_RGB, GL_FLOAT, nullptr
         );
       }
     }
@@ -144,35 +134,36 @@ namespace GLBViewer
     mEnvMap = loadEnvMap(*hdrTexture);
   }
 
-  std::unique_ptr<CubemapTexture> IBL::loadCubemap(
-    int mapSize, const std::function<void(const glm::mat4& view)>& viewSetter
+  void IBL::renderToCubemap(
+    const CubemapTexture& cubemap,
+    int viewportSize,
+    const std::function<void(const glm::mat4& view)>& viewSetter
   ) const
   {
-    auto cubemap = createCubemap(mapSize);
     auto frameBuffer = std::make_unique<FrameBuffer>();
     mCubeRenderBuffer->bind();
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
-    glViewport(0, 0, mapSize, mapSize);
+    glViewport(0, 0, viewportSize, viewportSize);
     for (size_t faceIdx = 0; faceIdx < 6; ++faceIdx)
     {
       viewSetter(CAPTURE_VIEWS[faceIdx]);
-      frameBuffer->addColorAttachment(*cubemap, faceIdx, 0);
+      frameBuffer->addColorAttachment(cubemap, faceIdx, 0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     glViewport(0, 0, viewport[2], viewport[3]);
-    return cubemap;
   }
 
   std::unique_ptr<CubemapTexture> IBL::loadEnvMap(const Texture2D& hdrTexture) const
   {
+    auto envMap = createCubemap(ENV_MAP_SIZE);
     EnvMapShaderProgram shader(ENV_MAP_VERTEX_SHADER_PATH, ENV_MAP_FRAGMENT_SHADER_PATH);
     shader.setProjection(CAPTURE_PROJECTION);
     shader.setEquirectangularMap(hdrTexture);
     shader.bind();
     auto viewSetter = [&shader](const glm::mat4& view) { shader.setView(view); };
-    auto envMap = loadCubemap(ENV_MAP_SIZE, viewSetter);
+    renderToCubemap(*envMap, ENV_MAP_SIZE, viewSetter);
     envMap->bind();
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -181,6 +172,7 @@ namespace GLBViewer
 
   std::unique_ptr<CubemapTexture> IBL::loadIrradianceMap() const
   {
+    auto irradianceMap = createCubemap(IRRADIANCE_MAP_SIZE);
     IrradianceMapShaderProgram shader(
       IRRADIANCE_MAP_VERTEX_SHADER_PATH, IRRADIANCE_MAP_FRAGMENT_SHADER_PATH
     );
@@ -188,7 +180,8 @@ namespace GLBViewer
     shader.setEnvMap(*mEnvMap);
     shader.bind();
     auto viewSetter = [&shader](const glm::mat4& view) { shader.setView(view); };
-    return loadCubemap(IRRADIANCE_MAP_SIZE, viewSetter);
+    renderToCubemap(*irradianceMap, IRRADIANCE_MAP_SIZE, viewSetter);
+    return irradianceMap;
   }
 
   std::unique_ptr<CubemapTexture> IBL::loadPrefilteredEnvMap() const

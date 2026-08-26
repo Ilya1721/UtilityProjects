@@ -82,4 +82,15 @@ namespace GLBViewer
     );
     return image;
   }
+
+  std::unique_ptr<HDRI> loadHDRI(const std::string& filePath)
+  {
+    auto image = std::make_unique<HDRI>();
+    stbi_set_flip_vertically_on_load(true);
+    image->data = stbi_loadf(
+      filePath.c_str(), &image->width, &image->height, &image->colorChannels, 0
+    );
+    stbi_set_flip_vertically_on_load(false);
+    return image;
+  }
 }
