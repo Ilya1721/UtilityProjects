@@ -42,7 +42,7 @@ namespace GLBViewer
     auto distanceY = height * FOV_Y_COTANGENT * PADDING;
     auto distance = std::max(distanceX, distanceY);
     mTarget = center;
-    mEye = glm::vec3(0.0f, 0.0f, max.z + distance);
+    mEye = glm::vec3(center.x, center.y, max.z + distance);
     mUp = glm::vec3(0.0f, 1.0f, 0.0f);
     mView = glm::lookAt(mEye, mTarget, mUp);
     mEyeTargetInitialDistance = glm::length(mTarget - mEye);

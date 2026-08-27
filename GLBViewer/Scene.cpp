@@ -73,7 +73,6 @@ namespace GLBViewer
   void Scene::renderBlend(const PBRShaderProgram* shader) const
   {
     mRenderBuffer.bind();
-    glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     for (const auto& mesh : mBlendMeshes)
@@ -81,7 +80,6 @@ namespace GLBViewer
       render(shader, mesh);
     }
     glDisable(GL_BLEND);
-    glDepthMask(GL_TRUE);
   }
 
   void Scene::sortBlendMeshes(const glm::vec3& cameraPos)
