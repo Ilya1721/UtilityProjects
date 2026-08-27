@@ -57,4 +57,10 @@ namespace GLBViewer
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFBO);
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, mask, GL_NEAREST);
   }
+
+  void FrameBuffer::resizeDepthAttachment(int width, int height) const
+  {
+    bind();
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+  }
 }

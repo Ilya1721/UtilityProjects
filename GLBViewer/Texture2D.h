@@ -8,6 +8,7 @@ namespace GLBViewer
   {
    public:
     Texture2D(int width, int height);
+    void resize(int width, int height);
     int getWidth() const;
     int getHeight() const;
     void bind() const;

@@ -11,6 +11,12 @@ namespace GLBViewer
   {
   }
 
+  void Texture2D::resize(int width, int height)
+  {
+    mWidth = width;
+    mHeight = height;
+  }
+
   void Texture2D::bind() const
   {
     glBindTexture(GL_TEXTURE_2D, mTexture);

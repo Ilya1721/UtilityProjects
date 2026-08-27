@@ -11,6 +11,7 @@ namespace GLBViewer
 {
   int getFormat(int colorChannels);
   int getInternalFormat(int colorChannels, bool useSRGB);
+  void onScreenTextureResized(const Texture2D& texture, int width, int height);
   std::unique_ptr<Texture2D> createScreenTexture(int width, int height);
   std::unique_ptr<RegularImage> loadImage(const std::string& filePath);
   std::unique_ptr<RegularImage> loadImage(const unsigned char* bytes, int bytesLength);

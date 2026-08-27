@@ -181,6 +181,9 @@ namespace GLBViewer
 
   void Window::onViewportSizeChanged(int width, int height)
   {
+    mOpaqueColor->resize(width, height);
+    onScreenTextureResized(*mOpaqueColor, width, height);
+    mOffscreenFrameBuffer->resizeDepthAttachment(width, height);
     mViewport->resize(width, height);
     mShader->setProjection(mViewport->getProjection());
     mShader->setViewportSize(glm::vec2(width, height));

@@ -204,7 +204,7 @@ namespace GLBViewer
           auto convertedData = reinterpret_cast<const unsigned char*>(
             data.bytes.data() + bufferView.byteOffset
           );
-          image = loadImage(convertedData, data.bytes.size());
+          image = loadImage(convertedData, bufferView.byteLength);
         }
       },
       buffer.data

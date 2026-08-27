@@ -36,6 +36,7 @@ namespace GLBViewer
         case 4:
           return GL_SRGB8_ALPHA8;
       }
+      throw std::exception("Unsupported amount of color channels for SRGB");
     }
     switch (colorChannels)
     {
@@ -49,6 +50,14 @@ namespace GLBViewer
         return GL_RGBA8;
     }
     throw std::exception("Unsupported amount of color channels");
+  }
+
+  void onScreenTextureResized(const Texture2D& texture, int width, int height)
+  {
+    texture.bind();
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
+    );
   }
 
   std::unique_ptr<Texture2D> createScreenTexture(int width, int height)
