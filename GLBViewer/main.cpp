@@ -11,7 +11,7 @@ int main()
 {
   try
   {
-    auto modelPath = fs::current_path() / "ThirdParty" / "models" / "camera.glb";
+    auto modelPath = fs::current_path() / "ThirdParty" / "models" / "scifi_girl.glb";
     GLBViewer::Window window(1200, 800);
     window.loadScene(modelPath);
     window.render();

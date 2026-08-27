@@ -189,14 +189,14 @@ namespace GLBViewer
   }
 
   std::unique_ptr<RegularImage> GLBParser::loadImageFromMemory(
-    const fastgltf::sources::BufferView& bufferViewSource
+    const fastgltf::sources::BufferView& bufferViewSource, int colorChannels
   ) const
   {
     const auto& bufferView = mAsset->bufferViews[bufferViewSource.bufferViewIndex];
     const auto& buffer = mAsset->buffers[bufferView.bufferIndex];
     std::unique_ptr<RegularImage> image;
     std::visit(
-      [&image, &bufferView](auto&& data)
+      [&image, &bufferView, colorChannels](auto&& data)
       {
         using BufferDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<BufferDataType, fastgltf::sources::Array>)
@@ -204,7 +204,7 @@ namespace GLBViewer
           auto convertedData = reinterpret_cast<const unsigned char*>(
             data.bytes.data() + bufferView.byteOffset
           );
-          image = loadImage(convertedData, bufferView.byteLength);
+          image = loadImage(convertedData, bufferView.byteLength, colorChannels);
         }
       },
       buffer.data
@@ -213,7 +213,7 @@ namespace GLBViewer
   }
 
   std::shared_ptr<Texture2D> GLBParser::parseTexture(
-    const fastgltf::TextureInfo& textureInfo, bool useSRGB
+    const fastgltf::TextureInfo& textureInfo, bool useSRGB, int colorChannels
   ) const
   {
     auto textureIndex = textureInfo.textureIndex;
@@ -226,16 +226,16 @@ namespace GLBViewer
     const auto& imageGltf = mAsset->images[textureGltf.imageIndex.value()];
     std::unique_ptr<RegularImage> image;
     std::visit(
-      [this, &imageGltf, &image](auto&& data)
+      [this, &imageGltf, &image, colorChannels](auto&& data)
       {
         using ImageDataType = std::decay_t<decltype(data)>;
         if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::BufferView>)
         {
-          image = loadImageFromMemory(data);
+          image = loadImageFromMemory(data, colorChannels);
         }
         else if constexpr (std::is_same_v<ImageDataType, fastgltf::sources::URI>)
         {
-          image = loadImage(data.uri.c_str());
+          image = loadImage(data.uri.c_str(), colorChannels);
         }
       },
       imageGltf.data
@@ -269,7 +269,7 @@ namespace GLBViewer
     if (materialGltf.pbrData.baseColorTexture.has_value())
     {
       const auto& textureInfo = materialGltf.pbrData.baseColorTexture.value();
-      material.baseColorTexture = parseTexture(textureInfo, true);
+      material.baseColorTexture = parseTexture(textureInfo, true, 4);
     }
     if (materialGltf.normalTexture.has_value())
     {

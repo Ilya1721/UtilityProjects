@@ -74,21 +74,27 @@ namespace GLBViewer
     return texture;
   }
 
-  std::unique_ptr<RegularImage> loadImage(const std::string& filePath)
+  std::unique_ptr<RegularImage> loadImage(const std::string& filePath, int colorChannels)
   {
     auto image = std::make_unique<RegularImage>();
+    int fileColorChannels {};
     image->data = stbi_load(
-      filePath.c_str(), &image->width, &image->height, &image->colorChannels, 0
+      filePath.c_str(), &image->width, &image->height, &fileColorChannels, colorChannels
     );
+    image->colorChannels = colorChannels != 0 ? colorChannels : fileColorChannels;
     return image;
   }
 
-  std::unique_ptr<RegularImage> loadImage(const unsigned char* bytes, int bytesLength)
+  std::unique_ptr<RegularImage> loadImage(
+    const unsigned char* bytes, int bytesLength, int colorChannels
+  )
   {
     auto image = std::make_unique<RegularImage>();
+    int fileColorChannels {};
     image->data = stbi_load_from_memory(
-      bytes, bytesLength, &image->width, &image->height, &image->colorChannels, 0
+      bytes, bytesLength, &image->width, &image->height, &fileColorChannels, colorChannels
     );
+    image->colorChannels = colorChannels != 0 ? colorChannels : fileColorChannels;
     return image;
   }
 
