@@ -32,6 +32,12 @@ namespace GLBViewer
     void sendDataToGPU();
   };
 
+  class ScreenRenderBuffer : public VertexBuffer
+  {
+  public:
+    void sendDataToGPU();
+  };
+
   class SceneRenderBuffer : public VertexBuffer
   {
    public:

@@ -46,6 +46,17 @@ namespace GLBViewer
   {
     shader->setModel(mesh->getGlobalTransform());
     shader->setMaterial(mesh->getMaterial());
+    render(mesh);
+  }
+
+  void Scene::render(const PreRenderSetup& setup, const Mesh* mesh) const
+  {
+    setup(*mesh);
+    render(mesh);
+  }
+
+  void Scene::render(const Mesh* mesh) const
+  {
     auto vertexOffset = mMeshOffsetMap.at(mesh);
     glDrawArrays(GL_TRIANGLES, vertexOffset, mesh->getVertices().size());
   }
@@ -59,6 +70,15 @@ namespace GLBViewer
       render(shader, mesh);
     }
     glDepthMask(GL_TRUE);
+  }
+
+  void Scene::renderOpaque(const PreRenderSetup& setup) const
+  {
+    mRenderBuffer.bind();
+    for (const auto& mesh : mOpaqueMeshes)
+    {
+      render(setup, mesh);
+    }
   }
 
   void Scene::renderOpaque(const PBRShaderProgram* shader) const

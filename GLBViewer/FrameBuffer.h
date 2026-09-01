@@ -15,8 +15,11 @@ namespace GLBViewer
     void addColorAttachment(const Texture2D& texture, int mipLevel) const;
     void addColorAttachment(const CubemapTexture& texture, int faceIdx, int mipLevel) const;
     void addDepthAttachment(int width, int height) const;
+    void addDepthAttachment(const Texture2D& texture, int mipLevel) const;
     void copyPixels(int width, int height, int targetFBO, int mask) const;
+    void copyPixels(int width, int height, const FrameBuffer& target, int mask) const;
     void resizeDepthAttachment(int width, int height) const;
+    void enableColorDraw(bool enable) const;
 
    private:
     unsigned int mFBO {};

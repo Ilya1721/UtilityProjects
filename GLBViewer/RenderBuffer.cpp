@@ -60,6 +60,21 @@ namespace GLBViewer
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
   }
 
+  void ScreenRenderBuffer::sendDataToGPU()
+  {
+    bind();
+    auto stride = 4 * sizeof(float);
+    glBufferData(
+      GL_ARRAY_BUFFER, sizeof(SCREEN_VERTICES), SCREEN_VERTICES, GL_STATIC_DRAW
+    );
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, nullptr);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(
+      1, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(2 * sizeof(float))
+    );
+  }
+
   void SceneRenderBuffer::updateAlignment(const Vertex& vertex)
   {
     auto updateFunc = [this](const auto& vec)

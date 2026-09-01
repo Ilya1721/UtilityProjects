@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -10,20 +11,25 @@
 
 namespace GLBViewer
 {
+  using PreRenderSetup = std::function<void(const Mesh& mesh)>;
+
   class PBRShaderProgram;
 
   class Scene
   {
    public:
     void load(const std::filesystem::path& scenePath);
-    void renderTransmissive(const PBRShaderProgram* shader) const;
+    void renderOpaque(const PreRenderSetup& setup) const;
     void renderOpaque(const PBRShaderProgram* shader) const;
+    void renderTransmissive(const PBRShaderProgram* shader) const;
     void renderBlend(const PBRShaderProgram* shader) const;
     void sortBlendMeshes(const glm::vec3& cameraPos);
     const AABB& getSceneAABB() const;
 
    private:
     void render(const PBRShaderProgram* shader, const Mesh* mesh) const;
+    void render(const PreRenderSetup& setup, const Mesh* mesh) const;
+    void render(const Mesh* mesh) const;
     void collectVertices(const Mesh* root, std::vector<Vertex>& vertices);
     void selectRenderType(const Mesh* mesh);
 

@@ -7,10 +7,12 @@
 
 #include "Camera.h"
 #include "CubemapTexture.h"
+#include "FrameBuffer.h"
 #include "PBRShaderProgram.h"
 #include "Scene.h"
+#include "ScreenShaderProgram.h"
+#include "TAA.h"
 #include "Viewport.h"
-#include "FrameBuffer.h"
 
 namespace GLBViewer
 {
@@ -51,18 +53,18 @@ namespace GLBViewer
     glm::vec3 screenPosToWorldPos(const glm::vec2& screenPos, float depth) const;
     glm::vec3 screenPosToNDC(const glm::vec2& screenPos) const;
     void initIBL(int width, int height);
-    void initOffscreenRendering(int width, int height);
 
    private:
     std::unique_ptr<Scene> mScene;
     std::unique_ptr<Viewport> mViewport;
     std::unique_ptr<Camera> mCamera;
-    std::unique_ptr<PBRShaderProgram> mShader;
+    std::unique_ptr<PBRShaderProgram> mModelShader;
+    std::unique_ptr<ScreenShaderProgram> mScreenShader;
     std::unique_ptr<CubemapTexture> mIrradianceMap;
     std::unique_ptr<CubemapTexture> mPrefilteredEnvMap;
     std::unique_ptr<Texture2D> mBRDFLUT;
-    std::unique_ptr<Texture2D> mOpaqueColor;
-    std::unique_ptr<FrameBuffer> mOffscreenFrameBuffer;
+    std::unique_ptr<ScreenRenderBuffer> mScreenRenderBuffer;
+    std::unique_ptr<TAA> mTAA;
     WindowHandle mWindowHandle;
     CameraMovementState mCameraMovementState;
   };

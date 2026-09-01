@@ -127,6 +127,7 @@ namespace GLBViewer
 {
   IBL::IBL(const std::string& hdriFilePath)
   {
+    glEnable(GL_DEPTH_TEST);
     auto hdri = loadHDRI(hdriFilePath);
     auto hdrTexture = createHDRTexture(*hdri);
     mCubeRenderBuffer = std::make_unique<CubeRenderBuffer>();

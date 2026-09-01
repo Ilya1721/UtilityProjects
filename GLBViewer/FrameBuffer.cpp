@@ -45,10 +45,24 @@ namespace GLBViewer
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRBO);
   }
 
+  void FrameBuffer::addDepthAttachment(const Texture2D& texture, int mipLevel) const
+  {
+    bind();
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.getId(), mipLevel
+    );
+  }
+
   void FrameBuffer::bind() const
   {
     glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, mRBO);
+  }
+
+  void FrameBuffer::copyPixels(int width, int height, const FrameBuffer& target, int mask)
+    const
+  {
+    copyPixels(width, height, target.mFBO, mask);
   }
 
   void FrameBuffer::copyPixels(int width, int height, int targetFBO, int mask) const
@@ -62,5 +76,12 @@ namespace GLBViewer
   {
     bind();
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+  }
+
+  void FrameBuffer::enableColorDraw(bool enable) const
+  {
+    bind();
+    auto state = enable ? GL_COLOR_ATTACHMENT0 : GL_NONE;
+    glDrawBuffer(state);
   }
 }

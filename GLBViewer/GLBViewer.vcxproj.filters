@@ -80,6 +80,21 @@
     <ClCompile Include="PrefilteredEnvMapShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TAA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionVectorsShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TAAResolveShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -160,6 +175,21 @@
     <ClInclude Include="PrefilteredEnvMapShaderProgram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TAA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionVectorsShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TAAResolveShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="PBRShader.vert">
@@ -199,6 +229,30 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Common.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ScreenShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ScreenShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="DepthShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="DepthShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="MotionVectorsShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="MotionVectorsShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="TAAResolveShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="TAAResolveShader.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

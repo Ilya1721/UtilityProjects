@@ -52,25 +52,40 @@ namespace GLBViewer
     throw std::exception("Unsupported amount of color channels");
   }
 
-  void onScreenTextureResized(const Texture2D& texture, int width, int height)
+  std::unique_ptr<ResizableTexture2D> createScreenTexture(int width, int height)
   {
-    texture.bind();
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
-    );
-  }
-
-  std::unique_ptr<Texture2D> createScreenTexture(int width, int height)
-  {
-    auto texture = std::make_unique<Texture2D>(width, height);
-    texture->bind();
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
+    auto texture = std::make_unique<ResizableTexture2D>(
+      width, height, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr
     );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    return texture;
+  }
+
+  std::unique_ptr<ResizableTexture2D> createMotionVectorsTexture(int width, int height)
+  {
+    auto texture = std::make_unique<ResizableTexture2D>(
+      width, height, GL_RG16F, GL_RG, GL_FLOAT, nullptr
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    return texture;
+  }
+
+  std::unique_ptr<ResizableTexture2D> createDepthMap(int width, int height)
+  {
+    auto texture = std::make_unique<ResizableTexture2D>(
+      width, height, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, DEPTH_TEXTURE_BORDER_COLOR);
     return texture;
   }
 
