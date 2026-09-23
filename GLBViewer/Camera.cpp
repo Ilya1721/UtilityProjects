@@ -52,10 +52,14 @@ namespace GLBViewer
   {
     auto startPosOnSphere = projectOnSphere(startPosNDC);
     auto endPosOnSphere = projectOnSphere(endPosNDC);
-    auto rotationAngle = glm::angle(startPosOnSphere, endPosOnSphere);
-    auto rotationAxis = glm::normalize(glm::cross(startPosOnSphere, endPosOnSphere));
+    auto rotationAxis = glm::cross(startPosOnSphere, endPosOnSphere);
+    if (glm::epsilonEqual(glm::length2(rotationAxis), 0.0f, 1e-5f))
+    {
+      return;
+    }
     auto viewRotation = glm::mat4(glm::transpose(glm::mat3(mView)));
-    rotationAxis = viewRotation * glm::vec4(rotationAxis, 0.0f);
+    rotationAxis = viewRotation * glm::vec4(glm::normalize(rotationAxis), 0.0f);
+    auto rotationAngle = glm::angle(startPosOnSphere, endPosOnSphere);
     auto rotation = glm::rotate(-rotationAngle, rotationAxis);
     glm::vec3 eyeTargetVec = rotation * glm::vec4(mEye - mTarget, 0.0f);
     mEye = mTarget + eyeTargetVec;
