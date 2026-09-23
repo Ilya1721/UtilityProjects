@@ -11,7 +11,11 @@ namespace GLBViewer
 {
   int getFormat(int colorChannels);
   int getInternalFormat(int colorChannels, bool useSRGB);
-  std::unique_ptr<ResizableTexture2D> createScreenTexture(int width, int height);
+  std::unique_ptr<Texture2D> createSMAAAreaTexture();
+  std::unique_ptr<Texture2D> createSMAASearchTexture();
+  std::unique_ptr<ResizableTexture2D> createHDRScreenTexture(int width, int height);
+  std::unique_ptr<ResizableTexture2D> createLDRScreenTexture(int width, int height);
+  std::unique_ptr<ResizableTexture2D> createRGLDRScreenTexture(int width, int height);
   std::unique_ptr<ResizableTexture2D> createMotionVectorsTexture(int width, int height);
   std::unique_ptr<ResizableTexture2D> createDepthMap(int width, int height);
   std::unique_ptr<RegularImage> loadImage(

@@ -11,7 +11,7 @@
 #include "PBRShaderProgram.h"
 #include "Scene.h"
 #include "ScreenShaderProgram.h"
-#include "TAA.h"
+#include "SMAA.h"
 #include "Viewport.h"
 
 namespace GLBViewer
@@ -64,7 +64,7 @@ namespace GLBViewer
     std::unique_ptr<CubemapTexture> mPrefilteredEnvMap;
     std::unique_ptr<Texture2D> mBRDFLUT;
     std::unique_ptr<ScreenRenderBuffer> mScreenRenderBuffer;
-    std::unique_ptr<TAA> mTAA;
+    std::unique_ptr<SMAA> mSMAA;
     WindowHandle mWindowHandle;
     CameraMovementState mCameraMovementState;
   };

@@ -85,6 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="ACESToneMappingShaderProgram.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CubemapTexture.cpp" />
     <ClCompile Include="DepthShaderProgram.cpp" />
@@ -104,6 +105,10 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScreenShaderProgram.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="SMAA.cpp" />
+    <ClCompile Include="SMAABlendShaderProgram.cpp" />
+    <ClCompile Include="SMAAEdgeShaderProgram.cpp" />
+    <ClCompile Include="SMAANeighborhoodShaderProgram.cpp" />
     <ClCompile Include="TAA.cpp" />
     <ClCompile Include="TAAResolveShaderProgram.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -114,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="ACESToneMappingShaderProgram.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CubemapTexture.h" />
@@ -135,6 +141,10 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ScreenShaderProgram.h" />
     <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="SMAA.h" />
+    <ClInclude Include="SMAABlendShaderProgram.h" />
+    <ClInclude Include="SMAAEdgeShaderProgram.h" />
+    <ClInclude Include="SMAANeighborhoodShaderProgram.h" />
     <ClInclude Include="StaticModels.h" />
     <ClInclude Include="TAA.h" />
     <ClInclude Include="TAAResolveShaderProgram.h" />
@@ -146,27 +156,35 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="BRDFLUTShader.frag" />
-    <None Include="BRDFLUTShader.vert" />
+    <None Include="ACESToneMapping.frag" />
+    <None Include="ACESToneMapping.vert" />
+    <None Include="BRDFLUT.frag" />
+    <None Include="BRDFLUT.vert" />
     <None Include="Common.glsl" />
-    <None Include="DepthShader.frag" />
-    <None Include="DepthShader.vert" />
-    <None Include="EnvMapShader.frag" />
-    <None Include="EnvMapShader.vert" />
+    <None Include="Depth.frag" />
+    <None Include="Depth.vert" />
+    <None Include="EnvMap.frag" />
+    <None Include="EnvMap.vert" />
     <None Include="IBLCommon.glsl" />
-    <None Include="IrradianceMapShader.frag" />
-    <None Include="IrradianceMapShader.vert" />
-    <None Include="MotionVectorsShader.frag" />
-    <None Include="MotionVectorsShader.vert" />
+    <None Include="IrradianceMap.frag" />
+    <None Include="IrradianceMap.vert" />
+    <None Include="MotionVectors.frag" />
+    <None Include="MotionVectors.vert" />
     <None Include="PBRCommon.glsl" />
-    <None Include="PBRShader.frag" />
-    <None Include="PBRShader.vert" />
-    <None Include="PrefilteredEnvMapShader.frag" />
-    <None Include="PrefilteredEnvMapShader.vert" />
-    <None Include="ScreenShader.frag" />
-    <None Include="ScreenShader.vert" />
-    <None Include="TAAResolveShader.frag" />
-    <None Include="TAAResolveShader.vert" />
+    <None Include="PBR.frag" />
+    <None Include="PBR.vert" />
+    <None Include="PrefilteredEnvMap.frag" />
+    <None Include="PrefilteredEnvMap.vert" />
+    <None Include="Screen.frag" />
+    <None Include="Screen.vert" />
+    <None Include="SMAABlend.frag" />
+    <None Include="SMAABlend.vert" />
+    <None Include="SMAAEdge.frag" />
+    <None Include="SMAAEdge.vert" />
+    <None Include="SMAANeighborhood.frag" />
+    <None Include="SMAANeighborhood.vert" />
+    <None Include="TAAResolve.frag" />
+    <None Include="TAAResolve.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -95,6 +95,21 @@
     <ClCompile Include="TAAResolveShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SMAA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SMAAEdgeShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ACESToneMappingShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SMAABlendShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SMAANeighborhoodShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -190,36 +205,51 @@
     <ClInclude Include="TAAResolveShaderProgram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SMAA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SMAAEdgeShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ACESToneMappingShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SMAABlendShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SMAANeighborhoodShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PBRShader.vert">
+    <None Include="PBR.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="PBRShader.frag">
+    <None Include="PBR.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="EnvMapShader.vert">
+    <None Include="EnvMap.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="EnvMapShader.frag">
+    <None Include="EnvMap.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="IrradianceMapShader.frag">
+    <None Include="IrradianceMap.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="IrradianceMapShader.vert">
+    <None Include="IrradianceMap.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="PrefilteredEnvMapShader.frag">
+    <None Include="PrefilteredEnvMap.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="PrefilteredEnvMapShader.vert">
+    <None Include="PrefilteredEnvMap.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="BRDFLUTShader.frag">
+    <None Include="BRDFLUT.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="BRDFLUTShader.vert">
+    <None Include="BRDFLUT.vert">
       <Filter>Shaders</Filter>
     </None>
     <None Include="PBRCommon.glsl">
@@ -231,28 +261,52 @@
     <None Include="Common.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ScreenShader.frag">
+    <None Include="Screen.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ScreenShader.vert">
+    <None Include="Screen.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="DepthShader.frag">
+    <None Include="Depth.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="DepthShader.vert">
+    <None Include="Depth.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="MotionVectorsShader.frag">
+    <None Include="MotionVectors.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="MotionVectorsShader.vert">
+    <None Include="MotionVectors.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="TAAResolveShader.frag">
+    <None Include="TAAResolve.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="TAAResolveShader.vert">
+    <None Include="TAAResolve.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAABlend.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAABlend.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAAEdge.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAAEdge.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAANeighborhood.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="SMAANeighborhood.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ACESToneMapping.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ACESToneMapping.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -100,8 +100,8 @@ namespace GLBViewer
     );
     mScreenRenderBuffer = std::make_unique<ScreenRenderBuffer>();
     mScreenRenderBuffer->sendDataToGPU();
-    mTAA = std::make_unique<TAA>(
-      mModelShader.get(), mScene.get(), mCamera.get(), width, height
+    mSMAA = std::make_unique<SMAA>(
+      mModelShader.get(), mScene.get(), mCamera.get(), mViewport.get(), width, height
     );
     initIBL(width, height);
     mModelShader->setLightDir(glm::normalize(LIGHT_DIR));
@@ -164,8 +164,7 @@ namespace GLBViewer
   void Window::onViewportSizeChanged(int width, int height)
   {
     mViewport->resize(width, height);
-    mTAA->resize(width, height);
-    mTAA->setProjection(mViewport->getProjection());
+    mSMAA->resize(width, height);
     mModelShader->setViewportSize(glm::vec2(width, height));
   }
 
@@ -184,7 +183,7 @@ namespace GLBViewer
   {
     while (!glfwWindowShouldClose(mWindowHandle.get()))
     {
-      const auto& frame = mTAA->render();
+      const auto& frame = mSMAA->render();
       mScreenShader->setScreenTexture(frame);
       mScreenShader->bind();
       mScreenRenderBuffer->bind();

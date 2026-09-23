@@ -6,6 +6,26 @@
 #include <glad/glad.h>
 
 #include "Constants.h"
+#include "ThirdParty/resources/smaa/AreaTex.h"
+#include "ThirdParty/resources/smaa/SearchTex.h"
+
+namespace
+{
+  void initScreenTexture()
+  {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  }
+
+  int getPreviousUnpackAlignment()
+  {
+    GLint previousAlignment = 0;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    return previousAlignment;
+  }
+}
 
 namespace GLBViewer
 {
@@ -52,15 +72,62 @@ namespace GLBViewer
     throw std::exception("Unsupported amount of color channels");
   }
 
-  std::unique_ptr<ResizableTexture2D> createScreenTexture(int width, int height)
+  std::unique_ptr<Texture2D> createSMAAAreaTexture()
+  {
+    auto texture =
+      std::make_unique<Texture2D>(SMAA_AREA_TEXTURE_WIDTH, SMAA_AREA_TEXTURE_HEIGHT);
+    texture->bind();
+    auto previousAlignment = getPreviousUnpackAlignment();
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RG8, SMAA_AREA_TEXTURE_WIDTH, SMAA_AREA_TEXTURE_HEIGHT, 0,
+      GL_RG, GL_UNSIGNED_BYTE, areaTexBytes
+    );
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);
+    initScreenTexture();
+    return texture;
+  }
+
+  std::unique_ptr<Texture2D> createSMAASearchTexture()
+  {
+    auto texture =
+      std::make_unique<Texture2D>(SMAA_AREA_TEXTURE_WIDTH, SMAA_AREA_TEXTURE_HEIGHT);
+    texture->bind();
+    auto previousAlignment = getPreviousUnpackAlignment();
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_R8, SMAA_SEARCH_TEXTURE_WIDTH, SMAA_SEARCH_TEXTURE_HEIGHT, 0,
+      GL_RED, GL_UNSIGNED_BYTE, searchTexBytes
+    );
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);
+    initScreenTexture();
+    return texture;
+  }
+
+  std::unique_ptr<ResizableTexture2D> createHDRScreenTexture(int width, int height)
   {
     auto texture = std::make_unique<ResizableTexture2D>(
-      width, height, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr
+      width, height, GL_RGBA16F, GL_RGBA, GL_FLOAT, nullptr
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    initScreenTexture();
+    return texture;
+  }
+
+  std::unique_ptr<ResizableTexture2D> createLDRScreenTexture(int width, int height)
+  {
+    auto texture = std::make_unique<ResizableTexture2D>(
+      width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr
+    );
+    initScreenTexture();
+    return texture;
+  }
+
+  std::unique_ptr<ResizableTexture2D> createRGLDRScreenTexture(int width, int height)
+  {
+    auto texture = std::make_unique<ResizableTexture2D>(
+      width, height, GL_RG8, GL_RG, GL_UNSIGNED_BYTE, nullptr
+    );
+    initScreenTexture();
     return texture;
   }
 

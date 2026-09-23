@@ -46,6 +46,7 @@ namespace GLBViewer
     PBRShaderProgram* modelShader,
     Scene* scene,
     Camera* camera,
+    Viewport* viewport,
     int viewportWidth,
     int viewportHeight
   )
@@ -53,15 +54,17 @@ namespace GLBViewer
       mViewportWidth(viewportWidth),
       mViewportHeight(viewportHeight),
       mScene(scene),
-      mCamera(camera)
+      mCamera(camera),
+      mViewport(viewport)
   {
-    mPrevFrame = createScreenTexture(viewportWidth, viewportHeight);
-    mCurrFrame = createScreenTexture(viewportWidth, viewportHeight);
+    mPrevFrame = createHDRScreenTexture(viewportWidth, viewportHeight);
+    mCurrFrame = createHDRScreenTexture(viewportWidth, viewportHeight);
     mPrevDepthMap = createDepthMap(viewportWidth, viewportHeight);
     mCurrDepthMap = createDepthMap(viewportWidth, viewportHeight);
     mMotionVectors = createMotionVectorsTexture(viewportWidth, viewportHeight);
-    mOpaqueColor = createScreenTexture(viewportWidth, viewportHeight);
-    mResolvedFrame = createScreenTexture(viewportWidth, viewportHeight);
+    mOpaqueColor = createHDRScreenTexture(viewportWidth, viewportHeight);
+    mResolvedFrame = createHDRScreenTexture(viewportWidth, viewportHeight);
+    mToneMappedFrame = createLDRScreenTexture(viewportWidth, viewportHeight);
     mScreenRenderBuffer = std::make_unique<ScreenRenderBuffer>();
     mScreenRenderBuffer->sendDataToGPU();
     mScreenFrameBuffer = std::make_unique<FrameBuffer>();
@@ -77,15 +80,13 @@ namespace GLBViewer
     mResolveShader = std::make_unique<TAAResolveShaderProgram>(
       TAA_RESOLVE_VERTEX_SHADER_PATH, TAA_RESOLVE_FRAGMENT_SHADER_PATH
     );
+    mToneMappingShader = std::make_unique<ACESToneMappingShaderProgram>(
+      ACES_TONE_MAPPING_VERTEX_SHADER_PATH, ACES_TONE_MAPPING_FRAGMENT_SHADER_PATH
+    );
     mDepthPreRenderSetup = [this](const Mesh& mesh)
     { mDepthShader->setModel(mesh.getGlobalTransform()); };
     mMotionVectorsPreRenderSetup = [this](const Mesh& mesh)
     { mMotionVectorsShader->setModel(mesh.getGlobalTransform()); };
-  }
-
-  void TAA::setProjection(const glm::mat4& projection)
-  {
-    mProjection = projection;
   }
 
   void TAA::resize(int viewportWidth, int viewportHeight)
@@ -99,6 +100,7 @@ namespace GLBViewer
     mMotionVectors->resize(viewportWidth, viewportHeight);
     mOpaqueColor->resize(viewportWidth, viewportHeight);
     mResolvedFrame->resize(viewportWidth, viewportHeight);
+    mToneMappedFrame->resize(viewportWidth, viewportHeight);
     mOpaqueFrameBuffer->resizeDepthAttachment(viewportWidth, viewportHeight);
     mScreenFrameBuffer->resizeDepthAttachment(viewportWidth, viewportHeight);
   }
@@ -109,7 +111,18 @@ namespace GLBViewer
     auto jitterNDC = convertJitterToNDC(jitter, mViewportWidth, mViewportHeight);
     glm::vec3 jitterTranslationVec {jitterNDC.x, jitterNDC.y, 0.0f};
     auto jitterTranslation = glm::translate(glm::mat4(1.0f), jitterTranslationVec);
-    return jitterTranslation * mProjection;
+    return jitterTranslation * mViewport->getProjection();
+  }
+
+  void TAA::renderScreenSquare(ShaderProgram* shader) const
+  {
+    mScreenFrameBuffer->bind();
+    mScreenRenderBuffer->bind();
+    shader->bind();
+    glClear(COLOR_AND_DEPTH);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_DEPTH_TEST);
   }
 
   void TAA::renderToDepthMap(const glm::mat4& view, const glm::mat4& projection) const
@@ -144,7 +157,9 @@ namespace GLBViewer
     mModelShader->setProjection(projection);
     mScreenFrameBuffer->addColorAttachment(*mCurrFrame, 0);
     mOpaqueFrameBuffer->bind();
-    glClearColor(0.741f, 0.871f, 0.871f, 1.0f);
+    glClearColor(
+      BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a
+    );
     glClear(COLOR_AND_DEPTH);
     mScene->renderOpaque(mModelShader);
     mOpaqueFrameBuffer->copyPixels(
@@ -166,12 +181,14 @@ namespace GLBViewer
     mResolveShader->setScreenSize(mViewportWidth, mViewportHeight);
     mResolveShader->setIsFirstFrame(mIsFirstFrame);
     mScreenFrameBuffer->addColorAttachment(*mResolvedFrame, 0);
-    mScreenFrameBuffer->bind();
-    mScreenRenderBuffer->bind();
-    mResolveShader->bind();
-    glDisable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    renderScreenSquare(mResolveShader.get());
+  }
+
+  void TAA::renderToToneMappedFrame() const
+  {
+    mScreenFrameBuffer->addColorAttachment(*mToneMappedFrame, 0);
+    mToneMappingShader->setHDRTexture(*mResolvedFrame);
+    renderScreenSquare(mToneMappingShader.get());
   }
 
   const ResizableTexture2D& TAA::render()
@@ -185,11 +202,12 @@ namespace GLBViewer
     renderToMotionVectors(view, jitteredProjection);
     renderToFrame(view, jitteredProjection);
     resolve();
+    renderToToneMappedFrame();
     std::swap(mPrevDepthMap, mCurrDepthMap);
     std::swap(mPrevFrame, mResolvedFrame);
     mPrevView = view;
     mFrameIndex = (mFrameIndex + 1) % TAA_SAMPLE_COUNT;
     mIsFirstFrame = false;
-    return *mPrevFrame;
+    return *mToneMappedFrame;
   }
 }

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 
+#include "ACESToneMappingShaderProgram.h"
 #include "Camera.h"
 #include "DepthShaderProgram.h"
 #include "FrameBuffer.h"
@@ -13,6 +14,7 @@
 #include "Scene.h"
 #include "TAAResolveShaderProgram.h"
 #include "Texture2D.h"
+#include "Viewport.h"
 
 namespace GLBViewer
 {
@@ -23,17 +25,19 @@ namespace GLBViewer
       PBRShaderProgram* modelShader,
       Scene* scene,
       Camera* camera,
+      Viewport* viewport,
       int viewportWidth,
       int viewportHeight
     );
-    void setProjection(const glm::mat4& projection);
     void resize(int viewportWidth, int viewportHeight);
     const ResizableTexture2D& render();
 
    private:
+    void renderScreenSquare(ShaderProgram* shader) const;
     void renderToDepthMap(const glm::mat4& view, const glm::mat4& projection) const;
     void renderToMotionVectors(const glm::mat4& view, const glm::mat4& projection) const;
     void renderToFrame(const glm::mat4& view, const glm::mat4& projection) const;
+    void renderToToneMappedFrame() const;
     void resolve() const;
     glm::mat4 getJitteredProjection() const;
 
@@ -41,8 +45,8 @@ namespace GLBViewer
     PBRShaderProgram* mModelShader {};
     Scene* mScene {};
     Camera* mCamera {};
+    Viewport* mViewport {};
     glm::mat4 mPrevView;
-    glm::mat4 mProjection;
     PreRenderSetup mDepthPreRenderSetup;
     PreRenderSetup mMotionVectorsPreRenderSetup;
     std::unique_ptr<ResizableTexture2D> mPrevFrame;
@@ -52,12 +56,14 @@ namespace GLBViewer
     std::unique_ptr<ResizableTexture2D> mMotionVectors;
     std::unique_ptr<ResizableTexture2D> mOpaqueColor;
     std::unique_ptr<ResizableTexture2D> mResolvedFrame;
+    std::unique_ptr<ResizableTexture2D> mToneMappedFrame;
     std::unique_ptr<ScreenRenderBuffer> mScreenRenderBuffer;
     std::unique_ptr<FrameBuffer> mScreenFrameBuffer;
     std::unique_ptr<FrameBuffer> mOpaqueFrameBuffer;
     std::unique_ptr<DepthShaderProgram> mDepthShader;
     std::unique_ptr<MotionVectorsShaderProgram> mMotionVectorsShader;
     std::unique_ptr<TAAResolveShaderProgram> mResolveShader;
+    std::unique_ptr<ACESToneMappingShaderProgram> mToneMappingShader;
     int mFrameIndex {};
     int mViewportWidth {};
     int mViewportHeight {};
