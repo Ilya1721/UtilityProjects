@@ -5,8 +5,8 @@
 int main()
 {
   auto modelsFolder = std::filesystem::current_path() / "ThirdParty" / "models";
-  auto modelPath = modelsFolder / "CubeWithHoles.stl";
-  auto modelFixedPath = modelsFolder / "CubeWithoutHoles.stl";
+  auto modelPath = modelsFolder / "input2.stl";
+  auto modelFixedPath = modelsFolder / "output.stl";
   auto inputVertices = read(modelPath.string());
   Mesh mesh(inputVertices);
   auto outputVertices = mesh.fixHoles();

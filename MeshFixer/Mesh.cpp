@@ -1,5 +1,7 @@
 #include "Mesh.h"
 
+#include <unordered_set>
+
 Mesh::Mesh(const std::vector<Vertex>& vertices) : mVertices(vertices)
 {
   build();
@@ -12,6 +14,7 @@ void Mesh::build()
     createFace(vertexIdx);
   }
   connectTwins();
+  connectHolesHalfEdges();
   fixHoles();
 }
 
@@ -57,7 +60,7 @@ void Mesh::connectTwins()
     auto mapIt = mStartEndHalfEdgeMap.find(endStartPair);
     if (mapIt == mStartEndHalfEdgeMap.end())
     {
-      mTwinlessHalfEdges.push_back(halfEdge);
+      addHoleEdge(halfEdge);
     }
     else
     {
@@ -66,6 +69,28 @@ void Mesh::connectTwins()
       twinHalfEdge->twin = halfEdge;
     }
   }
+}
+
+void Mesh::connectHolesHalfEdges()
+{
+  for (const auto& [endPos, halfEdge] : mEndPosHoleHalfEdgeMap)
+  {
+    const auto& startPos = halfEdge->startVertex->pos;
+    auto prevHalfEdge = mEndPosHoleHalfEdgeMap[startPos];
+    halfEdge->prev = prevHalfEdge;
+    prevHalfEdge->next = halfEdge;
+  }
+}
+
+void Mesh::addHoleEdge(HalfEdge* halfEdge)
+{
+  auto twinHalfEdge = std::make_unique<HalfEdge>();
+  twinHalfEdge->startVertex = halfEdge->next->startVertex;
+  halfEdge->twin = twinHalfEdge.get();
+  twinHalfEdge->twin = halfEdge;
+  auto mapValue = std::make_pair(halfEdge->startVertex->pos, twinHalfEdge.get());
+  mEndPosHoleHalfEdgeMap.insert(mapValue);
+  mHalfEdges.push_back(std::move(twinHalfEdge));
 }
 
 std::array<Vertex*, 3> Mesh::getFaceVertices(size_t startVertexIdx)
@@ -102,11 +127,74 @@ std::array<std::unique_ptr<HalfEdge>, 3> Mesh::createFaceHalfEdges(
 std::vector<Vertex> Mesh::fixHoles() const
 {
   std::vector<Vertex> finalVertices = mVertices;
-  for (const auto& halfEdge : mTwinlessHalfEdges)
+  auto holesStartHalfEdges = getHolesStartHalfEdges();
+  for (const auto& halfEdge : holesStartHalfEdges)
   {
-    finalVertices.push_back(*halfEdge->startVertex);
+    auto startHalfEdge = halfEdge;
+    auto currHalfEdge = startHalfEdge;
+    do
+    {
+      auto holeCenter = getHoleCenter(currHalfEdge);
+      auto vertices = getHoleFaceVertices(holeCenter, currHalfEdge);
+      finalVertices.insert(finalVertices.end(), vertices.begin(), vertices.end());
+      currHalfEdge = currHalfEdge->next;
+    } while (currHalfEdge != startHalfEdge);
   }
   return finalVertices;
+}
+
+std::vector<HalfEdge*> Mesh::getHolesStartHalfEdges() const
+{
+  std::vector<HalfEdge*> holesStartHalfEdges;
+  std::unordered_set<HalfEdge*> passedHalfEdges;
+  for (const auto& [endPos, halfEdge] : mEndPosHoleHalfEdgeMap)
+  {
+    if (passedHalfEdges.find(halfEdge) != passedHalfEdges.end())
+    {
+      continue;
+    }
+    auto startHalfEdge = halfEdge;
+    auto currHalfEdge = halfEdge;
+    do
+    {
+      passedHalfEdges.insert(currHalfEdge);
+      currHalfEdge = currHalfEdge->next;
+    } while (currHalfEdge != startHalfEdge);
+    holesStartHalfEdges.push_back(startHalfEdge);
+  }
+  return holesStartHalfEdges;
+}
+
+glm::vec3 Mesh::getHoleCenter(HalfEdge* startHalfEdge) const
+{
+  glm::vec3 center(0.0f);
+  int halfEdgeCount = 0;
+  auto currHalfEdge = startHalfEdge;
+  do
+  {
+    center += currHalfEdge->startVertex->pos;
+    ++halfEdgeCount;
+    currHalfEdge = currHalfEdge->next;
+  } while (currHalfEdge != startHalfEdge);
+  return center / static_cast<float>(halfEdgeCount);
+}
+
+std::array<Vertex, 3> Mesh::getHoleFaceVertices(
+  const glm::vec3& holeCenter, HalfEdge* holeHalfEdge
+) const
+{
+  std::array<Vertex, 3> faceVertices;
+  faceVertices[0].pos = holeCenter;
+  faceVertices[1].pos = holeHalfEdge->startVertex->pos;
+  faceVertices[2].pos = holeHalfEdge->next->startVertex->pos;
+  auto leftEdge = holeCenter - faceVertices[1].pos;
+  auto rightEdge = faceVertices[2].pos - faceVertices[1].pos;
+  auto normal = glm::normalize(glm::cross(leftEdge, rightEdge));
+  for (auto& vertex : faceVertices)
+  {
+    vertex.normal = normal;
+  }
+  return faceVertices;
 }
 
 const std::vector<Vertex>& Mesh::getVertices() const

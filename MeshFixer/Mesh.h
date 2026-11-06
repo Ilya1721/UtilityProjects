@@ -58,6 +58,11 @@ class Mesh
   std::array<std::unique_ptr<HalfEdge>, 3> createFaceHalfEdges(
     const std::array<Vertex*, 3>& vertices, Face* face
   );
+  std::vector<HalfEdge*> getHolesStartHalfEdges() const;
+  glm::vec3 getHoleCenter(HalfEdge* startHalfEdge) const;
+  std::array<Vertex, 3> getHoleFaceVertices(
+    const glm::vec3& holeCenter, HalfEdge* holeHalfEdge
+  ) const;
   void addFaceHalfEdgesStartEndPairs(
     const std::array<std::unique_ptr<HalfEdge>, 3>& faceHalfEdges
   );
@@ -65,11 +70,13 @@ class Mesh
     std::unique_ptr<Face>&& face, std::array<std::unique_ptr<HalfEdge>, 3>& faceHalfEdges
   );
   void connectTwins();
+  void connectHolesHalfEdges();
+  void addHoleEdge(HalfEdge* halfEdge);
 
  private:
   std::vector<Vertex> mVertices;
   std::vector<std::unique_ptr<HalfEdge>> mHalfEdges;
   std::vector<std::unique_ptr<Face>> mFaces;
   std::unordered_map<StartEndPair, HalfEdge*> mStartEndHalfEdgeMap;
-  std::vector<HalfEdge*> mTwinlessHalfEdges;
+  std::unordered_map<glm::vec3, HalfEdge*> mEndPosHoleHalfEdgeMap;
 };
